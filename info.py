@@ -1,0 +1,62 @@
+import discord
+from discord.ext import commands
+
+import math # for tracking memory usage
+from psutil import Process # for tracking memory usage
+from os import getpid # for tracking memory usage
+
+import datetime # for tracking uptime
+import time # for tracking uptime
+
+from daily import cookieDict
+
+start_time = time.time()
+
+
+class Uptime:
+    def __init__(self, bot):
+        self.bot = bot
+
+
+@commands.command()
+async def info(ctx):
+
+    process = Process(getpid())
+    process_mem = math.floor(process.memory_info()[0] / float(2 ** 20))
+
+    # uptime tracking
+    current_time = time.time()
+    difference = int(round(current_time - start_time))
+
+    # send the info embed
+    info_embed = discord.Embed(
+        color = 0x546e7a,
+        )
+    
+    # bot avatar + bot name at the top
+    info_embed.set_author(name = ctx.bot.user.name, icon_url = ctx.bot.user.avatar)
+
+    # info lines
+    info_embed.add_field(name = "Uptime", value = str(datetime.timedelta(seconds=difference)), inline = True)
+    info_embed.add_field(name = "Memory", value = str(process_mem) + " MB", inline = True)
+    info_embed.add_field(name = "Prefix", value = ".", inline = True)
+    info_embed.add_field(name = "Version", value = "Beta", inline = True)
+    
+    total_users = 0 # count how many total users are in the database
+    for guild in cookieDict:
+        total_users += len(cookieDict[guild])
+    info_embed.add_field(name = "Users", value = total_users, inline = True)
+    
+    info_embed.add_field(name = "Guilds", value = len(ctx.bot.guilds), inline = True)
+
+    info_embed.add_field(name = "━━━━━━━━━━━━━" + "\n" "Creator", value = "dr.john", inline = True)
+    info_embed.add_field(name = "━━━━━━━━━━━━━" + "\n" "Twitter", value = "[@DrJohn_](https://twitter.com/DrJohn_)", inline = True)
+    info_embed.add_field(name = "━━━━━━━━━━━━━" + "\n" "Support", value = "[CookieBot HQ](https://discord.gg/QQTC3ABV9U)", inline = True)
+
+    await ctx.send(embed=info_embed)
+
+
+# connecting to main file
+
+async def setup(bot):
+    bot.add_command(info)
