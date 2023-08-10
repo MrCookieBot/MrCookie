@@ -11,12 +11,12 @@ async def help(ctx):
         )
     
     # title and profile icon
-    help_embed.set_author(name = "CookieBot Help Page", icon_url = ctx.bot.user.avatar)
+    help_embed.set_author(name = "MrCookie Help Page", icon_url = ctx.bot.user.avatar)
 
-    help_embed.add_field(name = "Information", value = "``.help`` ➙ View this help page to learn about CookieBot." + "\n" +
+    help_embed.add_field(name = "Information", value = "``.help`` ➙ View this help page to learn about MrCookie." + "\n" +
     "``.ping`` ➙ Find the latency from the bot to Discord." + "\n" +
     "``.info`` ➙ Information about the bot's status and more." + "\n" +
-    "``.invite`` ➙ Invite CookieBot to your server. ", inline = False)
+    "``.invite`` ➙ Invite MrCookie to your server. ", inline = False)
     
     help_embed.add_field(name = "Your Cookies", value = "``.daily`` ➙ Collect free cookies once everyday, amount increases based on streak." + "\n" + 
     "``.rob (userID)`` ➙ Try to steal another user's cookies, but you may not succeed." + "\n" +

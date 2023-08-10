@@ -6,7 +6,7 @@ from discord.ext import commands
 async def invite(ctx):
     # send the invite embed
     invite_embed = discord.Embed(
-        description = "[Click here to invite CookieBot!](https://discord.com/api/oauth2/authorize?client_id=1133155318117957643&permissions=2550523984&scope=applications.commands%20bot)",
+        description = "[Click here to invite MrCookie!](https://discord.com/api/oauth2/authorize?client_id=1133155318117957643&permissions=2550523984&scope=applications.commands%20bot)",
         color = 0x546e7a
         )
     
