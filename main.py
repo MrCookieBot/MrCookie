@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+from config import token
 
 # for bot uptime tracking
 start_time = []
@@ -43,4 +44,4 @@ bot = MyBot(command_prefix='!!', intents=intents)
 
 # token
 
-bot.run('MTEzMzE1NTMxODExNzk1NzY0Mw.Guue8l.VeXer3XdvF0uc8hGtMaZuOC5f-0X2_oOzVsKAc')
+bot.run(token)
