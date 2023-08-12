@@ -82,7 +82,7 @@ async def bal(ctx, user_id = "0"):
         await ctx.send(embed=embed)
     
     except discord.NotFound:
-        await ctx.send("You have sent an invalid user.")
+        await ctx.send("You sent an invalid user.")
     except Exception as Error:
         await ctx.send(Error)
 
