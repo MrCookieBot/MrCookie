@@ -8,7 +8,7 @@ from say import Admins
 userData = {"Streaks": 0, "ExpTime": None, "Cookies": 0, "Multiplier": 0, "RobExp": None}
 
 
-@commands.command()
+@commands.command(aliases = ["gen"])
 async def generate(ctx, user_id = "<@!0>", amount = "0"):
     try:
         # make sure only users with manage_server can run the command or bot admins
