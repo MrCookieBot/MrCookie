@@ -1,12 +1,15 @@
 import discord
 from discord.ext import commands
 from daily import cookieDict
+from blacklist import blacklisted_users
 
 @commands.command()
 async def eat(ctx):
     try:
         if ctx.guild.id not in cookieDict:
             cookieDict[ctx.guild.id] = {}
+        if ctx.author.id in blacklisted_users:
+            raise Exception("You are blacklisted from MrCookie.")
         if ctx.author.id not in cookieDict[ctx.guild.id]:
             raise Exception("You have no cookies to eat.")
         if cookieDict[ctx.guild.id][ctx.author.id]["Cookies"] - 1 < 0:
