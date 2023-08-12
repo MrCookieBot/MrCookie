@@ -32,7 +32,7 @@ class MyBot(commands.Bot):
 
     # send a msg when bot goes online
     async def on_ready(self):
-        channel = bot.get_channel(1138940434916311050)
+        channel = bot.get_channel(1138945384094388384)
         await channel.send("CookieBot has restarted and is back online.") # post message upon turning on
         await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name=".help")) # change bot status
 
