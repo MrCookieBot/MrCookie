@@ -13,7 +13,7 @@ async def eat(ctx):
             raise Exception("You have no cookies to eat.")
 
         # if no errors, continue with command
-        cookieDict[ctx.guild.id][ctx.author.id]["Cookies"] = cookieDict[ctx.author.id]["Cookies"] - 1 # removes 1 cookie from their total
+        cookieDict[ctx.guild.id][ctx.author.id]["Cookies"] = cookieDict[ctx.guild.id][ctx.author.id]["Cookies"] - 1 # removes 1 cookie from their total
         await ctx.send("Yummy! You ate 1 cookie 🍪")
 
     # exception handling
