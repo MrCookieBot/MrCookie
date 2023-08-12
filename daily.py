@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 # dictionaries
 cookieDict = {}
 
-userData = {"Streaks": 1, "ExpTime": datetime.now() + timedelta(hours = 24), "Cookies": 15, "Multiplier": 0, "RobExp": None}
+userData = {"Streaks": 1, "ExpTime": datetime.now() + timedelta(hours = 23), "Cookies": 15, "Multiplier": 0, "RobExp": None}
 
 # cookie calculations
 base_cookies = 15
@@ -26,7 +26,7 @@ async def daily(ctx):
             if cookieDict[ctx.guild.id][ctx.author.id]["ExpTime"]== None:
                 cookieDict[ctx.guild.id][ctx.author.id]["Streaks"] = cookieDict[ctx.guild.id][ctx.author.id]["Streaks"] + 1 # add 1 to daily streak
             else:
-                if datetime.now() > cookieDict[ctx.guild.id][ctx.author.id]["ExpTime"] + timedelta(hours = 24):
+                if datetime.now() > cookieDict[ctx.guild.id][ctx.author.id]["ExpTime"] + timedelta(hours = 23):
                     cookieDict[ctx.guild.id][ctx.author.id]["Streaks"] = 1 # reset their streak if it's been over 24 hours since exptime
                 else:
                     cookieDict[ctx.guild.id][ctx.author.id]["Streaks"] = cookieDict[ctx.guild.id][ctx.author.id]["Streaks"] + 1 # add 1 to daily streak
@@ -51,7 +51,7 @@ async def daily(ctx):
             # add their streaks and cookies up
             total = base_cookies + cookieDict[ctx.guild.id][ctx.author.id]["Multiplier"]
             cookieDict[ctx.guild.id][ctx.author.id]["Cookies"] = cookieDict[ctx.guild.id][ctx.author.id]["Cookies"] + total + weekly_reward # add up daily cookies
-            cookieDict[ctx.guild.id][ctx.author.id]["ExpTime"] = datetime.now() + timedelta(hours = 24) # set expiration date
+            cookieDict[ctx.guild.id][ctx.author.id]["ExpTime"] = datetime.now() + timedelta(hours = 23) # set expiration date
 
             # send the embed
             embed = discord.Embed(
