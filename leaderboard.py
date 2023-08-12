@@ -93,14 +93,14 @@ async def leaderboard(ctx):
 
                 # building the lines in an embed
                 if index <= 5:
-                    mystr += "**#" + str(rank) + "** " + str(user.mention) + "\n" + str(amount) + " Cookies" + "\n" + "\n"
+                    mystr += "**#" + str(rank) + "** " + str(user.mention) + " (" + str(user.display_name) + ") " + "\n" + str(amount) + " Cookies" + "\n" + "\n"
 
                 if index == 5:
                     embed_leaderboard.add_field(name = " ", value = mystr, inline = True)
                     mystr = ""
 
                 if index > 5 and rank <= 10:
-                    mystr += "**#" + str(rank) + "** " + str(user.mention) + "\n" + str(amount) + " Cookies" + "\n" + "\n"
+                    mystr += "**#" + str(rank) + "** " + str(user.mention) + " (" + str(user.display_name) + ") " + "\n" + str(amount) + " Cookies" + "\n" + "\n"
 
                 if index == 10:
                     embed_leaderboard.add_field(name = "\n", value = mystr, inline = True)
