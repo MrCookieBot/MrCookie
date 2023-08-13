@@ -9,6 +9,12 @@ Admins = [194962036784889858, 156872400145874944, 84117866944663552] # admin lis
 async def say(ctx, *message):
 
     try:
+        # check if user is blacklisted
+        from blacklist import blacklisted_users
+        if ctx.author.id in blacklisted_users:
+            raise Exception("You are blacklisted from MrCookie.")
+
+        # check if user has manage_guild perms or is in admin list
         if ctx.message.author.guild_permissions.manage_guild == False or ctx.message.author.id not in Admins:
             raise Exception("You don't have permission to run this command.")
 

@@ -1,11 +1,12 @@
 import discord
 from discord.ext import commands
 from daily import cookieDict
-from blacklist import blacklisted_users
+
 
 @commands.command()
 async def eat(ctx):
     try:
+        from blacklist import blacklisted_users
         if ctx.guild.id not in cookieDict:
             cookieDict[ctx.guild.id] = {}
         if ctx.author.id in blacklisted_users:

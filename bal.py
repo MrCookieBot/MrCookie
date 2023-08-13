@@ -34,6 +34,12 @@ userData = {"Streaks": 0, "ExpTime": None, "Cookies": 0, "Multiplier": 0, "RobEx
 async def bal(ctx, user_id = "0"):
 
     try:
+        # check if user is blacklisted
+        from blacklist import blacklisted_users
+        if ctx.author.id in blacklisted_users:
+            raise Exception("You are blacklisted from MrCookie.")
+
+        # check if user is legit
         user_id = user_id.strip("<@!>")
         if user_id.isdigit():
             user_id = int(user_id)

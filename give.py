@@ -8,6 +8,11 @@ userData = {"Streaks": 0, "ExpTime": None, "Cookies": 0, "Multiplier": 0, "RobEx
 @commands.command(aliases = ["gift", "transfer"])
 async def give(ctx, user_id = "<@!0>", amount = "0"):
     try:
+        # check if user is blacklisted
+        from blacklist import blacklisted_users
+        if ctx.author.id in blacklisted_users:
+            raise Exception("You are blacklisted from MrCookie.")
+        
         user_id = user_id.strip("<@!>")
         user_id = int(user_id)
         amount = int(amount)
