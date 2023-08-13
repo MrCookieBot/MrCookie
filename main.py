@@ -28,6 +28,7 @@ class MyBot(commands.Bot):
         await self.load_extension("invite")
         await self.load_extension("rob")
         await self.load_extension("blacklist")
+        await self.load_extension("unblacklist")
         bot.remove_command('help') # remove the default help command
         await self.load_extension("help") # add my own help command
 
