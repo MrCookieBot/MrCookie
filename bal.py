@@ -74,6 +74,12 @@ async def bal(ctx, user_id = "0"):
             if user_id not in cookieDict[ctx.guild.id]:
                 cookieDict[ctx.guild.id][user_id] = {**userData}
 
+        # get the user's rank
+        if user_id in blacklisted_users:
+            user_rank = "Blacklisted"
+        else:
+            user_rank = position(ctx.guild.id, user_id)
+
         # send the embed
         embed = discord.Embed(
             title = str(user.display_name) + "'s Cookie Balance",
@@ -82,7 +88,7 @@ async def bal(ctx, user_id = "0"):
     
     
         embed.add_field(name = "Cookies", value = str(cookieDict[ctx.guild.id][user.id]["Cookies"]), inline = True)
-        embed.add_field(name = "Rank", value = "#" + str(position(ctx.guild.id, user_id)), inline = True)
+        embed.add_field(name = "Rank", value = "#" + str(user_rank), inline = True)
         embed.set_thumbnail(url = user.display_avatar)
 
         await ctx.send(embed=embed)
