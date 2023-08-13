@@ -3,9 +3,11 @@ from discord.ext import commands
 from daily import cookieDict
 from say import Admins
 
+# load in the current blacklisted users
+
 blacklisted_users = []
 
-openFile = open("BlacklistedUsers.txt", "r") # open the blacklisted file
+openFile = open("BlacklistedUsers.txt", "r") # open the blacklisted users file
 lines = openFile.readlines() # read the lines
 openFile.close() # close the blacklisted file
 
@@ -13,6 +15,7 @@ for user in lines:
     user = user.strip("\n")
     user_int = int(user)
     blacklisted_users.append(user_int)
+
 
 @commands.command()
 async def blacklist(ctx, user_id = "0"):
@@ -24,10 +27,6 @@ async def blacklist(ctx, user_id = "0"):
         # make sure they sent a user_id
         if user_id == "0":
             raise Exception("Tell me which user, silly!")
-        
-        # make sure they didn't mention themself
-        if user_id == ctx.author.id:
-            raise Exception("You can't blacklist yourself dude..")
         
         # make sure user_id is valid
         user_id = user_id.strip("<@!>")
@@ -46,8 +45,23 @@ async def blacklist(ctx, user_id = "0"):
         else:
             user = ctx.bot.get_user(user_id)
 
+        # make sure they didn't mention themself
+        if user_id == ctx.author.id:
+            raise Exception("You can't blacklist yourself dude..")
+        
+        # check if user is already blacklisted
+        if user_id in blacklisted_users:
+            raise Exception("User is already blacklisted.")
 
         # if user_id passes all checks, start the blacklist process -----------
+
+        blacklisted_users.append(int(user_id))
+
+        openFile = open("BlacklistedUsers.txt", "a") # open the blacklisted file
+        openFile.write(str(user_id) + "\n") # add in the new blacklisted user
+        openFile.close() # close the blacklisted file
+
+        await ctx.send("Blacklisted " + str(user.mention) + " (" + str(user_id) + ") .")
         
 
 
