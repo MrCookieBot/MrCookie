@@ -21,7 +21,7 @@ async def help(ctx):
 
         help_embed.add_field(name = "Information", value = "``.help`` ➙ View this help page to learn about MrCookie." + "\n" +
         "``.ping`` ➙ Find the latency from the bot to Discord." + "\n" +
-        "``.info`` ➙ Information about the bot's status and more." + "\n" +
+        "``.info`` ➙ [Aliases: status] Information about the bot's status and more." + "\n" +
         "``.invite`` ➙ Invite MrCookie to your server. ", inline = False)
     
         help_embed.add_field(name = "Your Cookies", value = "``.daily`` ➙ Collect free cookies once everyday, amount increases based on streak." + "\n" + 
