@@ -18,7 +18,7 @@ class Uptime:
         self.bot = bot
 
 
-@commands.command()
+@commands.command(aliases = ["status"])
 async def info(ctx):
     try:
         # check if user is blacklisted
