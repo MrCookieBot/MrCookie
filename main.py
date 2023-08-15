@@ -49,8 +49,10 @@ bot = MyBot(command_prefix='!!', intents=intents)
 @bot.event
 async def on_message(message):
     if not message.author.bot:
-        await collect_cookie(message)
-        await bot.process_commands(message)
+        from blacklist import blacklisted_users
+        if message.author.id not in blacklisted_users:
+            await collect_cookie(message)
+            await bot.process_commands(message)
 
 
 # token
