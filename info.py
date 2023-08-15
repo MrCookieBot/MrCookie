@@ -45,7 +45,7 @@ async def info(ctx):
         info_embed.add_field(name = "Uptime", value = str(datetime.timedelta(seconds=difference)), inline = True)
         info_embed.add_field(name = "Memory", value = str(process_mem) + " MB", inline = True)
         info_embed.add_field(name = "Prefix", value = ".", inline = True)
-        info_embed.add_field(name = "Version", value = "Beta", inline = True)
+        info_embed.add_field(name = "Version", value = "Alpha", inline = True)
     
         total_users = 0 # count how many total users are in the database
         for guild in cookieDict:
