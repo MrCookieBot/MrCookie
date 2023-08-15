@@ -37,8 +37,8 @@ async def rob(ctx, user_id = "0"):
 
             # if user didn't mention someone, find someone random to rob user
             if user_id == 0:
-                if len(cookieDict[ctx.guild.id]) == 1: # if no one is in the database, do not rob anyone
-                    raise Exception("There's no one in the server to rob.")
+                if len(cookieDict[ctx.guild.id]) <= 2: # if no one is in the database, do not rob anyone
+                    raise Exception("No one in the guild meets the rob requirements.")
                 
                 rob_list = []
                 for person in cookieDict[ctx.guild.id]: # create a list of every user in the server who has over 15 cookies
@@ -67,11 +67,11 @@ async def rob(ctx, user_id = "0"):
                 
                 # if user is not in the database, they cannot be robbed
                 if user_id not in cookieDict[ctx.guild.id]:
-                    raise Exception("User does not have enough cookies to be robbed.")
+                    raise Exception("User doesn't have enough cookies to be robbed.")
                 
                 # if user has less than 15 cookies, they cannot be robbed
                 if cookieDict[ctx.guild.id][user_id]["Cookies"] < 15:
-                    raise Exception("User does not have enough cookies to be robbed.")
+                    raise Exception("User doesn't have enough cookies to be robbed.")
 
             # get_user's data to mention them in the rob message
             user = ctx.bot.get_user(user_id)
@@ -113,7 +113,7 @@ async def rob(ctx, user_id = "0"):
 
             if selection <= 7: # 70% chance of failed robbery
 
-                fail_list = ["you turned yourself into to the police, what a nice guy!.", "you tripped on the way there, it was pretty funny."] # list of failure messages
+                fail_list = ["you turned yourself into to the police, what a nice guy!", "you tripped on the way there, it was pretty funny."] # list of failure messages
                 fail_msg_chance = random.choice(range(0, len(fail_list))) # randomly pick which msg to use
                 fail_msg = fail_list[fail_msg_chance]
 
