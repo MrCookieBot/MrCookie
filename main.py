@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 from config import token
+from collect_cookie import collect_cookie
 
 # for bot uptime tracking
 start_time = []
@@ -42,6 +43,14 @@ class MyBot(commands.Bot):
 # prefix
 
 bot = MyBot(command_prefix='!!', intents=intents)
+
+
+# on_message
+@bot.event
+async def on_message(message):
+    if not message.author.bot:
+        await collect_cookie(message)
+        await bot.process_commands(message)
 
 
 # token
