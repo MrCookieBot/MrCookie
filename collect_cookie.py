@@ -75,7 +75,7 @@ async def collect_cookie(message):
                 # build the cookie drop embed-----------
                 drop_embed = discord.Embed(
                 title = "Dropped My Cookies, Grab Them!",
-                description = "> *Repeat the text or answer my question in chat*",
+                description = "> *Repeat the text in chat*",
                 color = 0x11806a,
                 )
 
