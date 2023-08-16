@@ -18,11 +18,6 @@ base_cookies = 15
 async def daily(ctx):
 
     try:
-        # check if user is blacklisted
-        from blacklist import blacklisted_users
-        if ctx.author.id in blacklisted_users:
-            raise Exception("You are blacklisted from MrCookie.")
-
         # check if guild/user is in database
         if ctx.guild.id not in cookieDict:
             cookieDict[ctx.guild.id] = {}

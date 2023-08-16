@@ -5,11 +5,6 @@ from discord.ext import commands
 @commands.command()
 async def help(ctx):
     try:
-        # check if user is blacklisted
-        from blacklist import blacklisted_users
-        if ctx.author.id in blacklisted_users:
-            raise Exception("You are blacklisted from MrCookie.")
-
         # send the transfer embed
         help_embed = discord.Embed(
             description = "Here's a list of all our commands and how to use them.",

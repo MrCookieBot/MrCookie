@@ -21,11 +21,6 @@ class Uptime:
 @commands.command(aliases = ["status"])
 async def info(ctx):
     try:
-        # check if user is blacklisted
-        from blacklist import blacklisted_users
-        if ctx.author.id in blacklisted_users:
-            raise Exception("You are blacklisted from MrCookie.")
-
         process = Process(getpid())
         process_mem = math.floor(process.memory_info()[0] / float(2 ** 20))
 

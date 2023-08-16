@@ -37,11 +37,6 @@ def position(guild_id, author_id):
 async def leaderboard(ctx):
 
     try:
-        # check if user is blacklisted
-        from blacklist import blacklisted_users
-        if ctx.author.id in blacklisted_users:
-            raise Exception("You are blacklisted from MrCookie.")
-
         # check if guild is in dictionary
         if ctx.guild.id not in cookieDict:
             raise Exception("Leaderboard is empty, run .daily to create one.")
