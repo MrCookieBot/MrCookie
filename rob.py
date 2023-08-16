@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 from daily import cookieDict
 from datetime import datetime, timedelta
+from custom_messages import pass_list, fail_list
 
 import random
 
@@ -85,7 +86,6 @@ async def rob(ctx, user_id = "0"):
             selection = random.choice(range(0, 11))
             if selection > 7: # 30% chance of succesful robbery
 
-                pass_list = ["you convinced them to invest in your stocks - which you trashed the next day.", "you stole their toilet and sold it on ebay, what's wrong with you??"] # list of pass messages
                 pass_msg_chance = random.choice(range(0, len(pass_list))) # randomly pick which msg to use
                 pass_msg = pass_list[pass_msg_chance]
 
@@ -105,7 +105,7 @@ async def rob(ctx, user_id = "0"):
                 # send the succeed embed
                 pass_embed = discord.Embed(
                 title = "Robbery Succeeded!",
-                description = "You stole ``" + str(total_losses) + "`` cookies from " + str(user.mention) + " (" + str(user.display_name) + ") because " + pass_msg,
+                description = "You stole ``" + str(total_losses) + "`` cookies from " + str(user.mention) + " (" + str(user.display_name) + ") by " + pass_msg,
                 color = 0x2ecc71,
                 )
             
@@ -113,7 +113,6 @@ async def rob(ctx, user_id = "0"):
 
             if selection <= 7: # 70% chance of failed robbery
 
-                fail_list = ["you turned yourself into to the police, what a nice guy!", "you tripped on the way there, it was pretty funny."] # list of failure messages
                 fail_msg_chance = random.choice(range(0, len(fail_list))) # randomly pick which msg to use
                 fail_msg = fail_list[fail_msg_chance]
 
