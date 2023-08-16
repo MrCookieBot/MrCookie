@@ -30,6 +30,11 @@ async def rob(ctx, user_id = "0"):
                 user_id = int(user_id)
             else:
                 raise Exception("You sent an invalid user.")
+            
+            # check if user is blacklisted
+            from blacklist import blacklisted_users
+            if user_id in blacklisted_users:
+                raise Exception("You can't rob a blacklisted user.")
 
             # if user didn't mention someone, find someone random to rob user
             if user_id == 0:

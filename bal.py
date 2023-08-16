@@ -45,6 +45,10 @@ async def bal(ctx, user_id = "0"):
         if user_id == 0:
             user_id = ctx.author.id
             user = ctx.author
+            # check if user is blacklisted
+            from blacklist import blacklisted_users
+            if user_id in blacklisted_users:
+                raise Exception("You can't check the balance of a blacklisted user.")
             # check if the user is in the database, if not add them
             if ctx.guild.id not in cookieDict:
                 cookieDict[ctx.guild.id] = {}
@@ -70,10 +74,7 @@ async def bal(ctx, user_id = "0"):
                 cookieDict[ctx.guild.id][user_id] = {**userData}
 
         # get the user's rank
-        if user_id in blacklisted_users:
-            user_rank = "Blacklisted"
-        else:
-            user_rank = position(ctx.guild.id, user_id)
+        user_rank = position(ctx.guild.id, user_id)
 
         # send the embed
         embed = discord.Embed(

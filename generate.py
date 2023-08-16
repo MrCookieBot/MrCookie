@@ -23,7 +23,6 @@ async def generate(ctx, user_id = "<@!0>", amount = "0"):
         amount = int(amount)
 
         # check the user
-        
         if user_id == 0 or len(str(user_id)) < 17:
             raise Exception("You forgot to tag a user and amount to give.")
         
@@ -31,6 +30,11 @@ async def generate(ctx, user_id = "<@!0>", amount = "0"):
         if guild.get_member(user_id) is None:
             raise Exception("Invalid user or not in the guild.")
         
+        # check if user is blacklisted
+        from blacklist import blacklisted_users
+        if user_id in blacklisted_users:
+            raise Exception("You can't generate cookies to a blacklisted user.")
+
         # check the amount
         if amount > 5000: # generate limit
             raise Exception("You can't generate more than 5,000 cookies at a time.")
