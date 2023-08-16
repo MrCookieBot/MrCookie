@@ -45,10 +45,6 @@ async def bal(ctx, user_id = "0"):
         if user_id == 0:
             user_id = ctx.author.id
             user = ctx.author
-            # check if user is blacklisted
-            from blacklist import blacklisted_users
-            if user_id in blacklisted_users:
-                raise Exception("You can't check the balance of a blacklisted user.")
             # check if the user is in the database, if not add them
             if ctx.guild.id not in cookieDict:
                 cookieDict[ctx.guild.id] = {}
@@ -58,6 +54,10 @@ async def bal(ctx, user_id = "0"):
             # checking if the user is legit
             if len(str(user_id)) < 17:
                 raise Exception("You sent an invalid user.")
+            # check if user is blacklisted
+            from blacklist import blacklisted_users
+            if user_id in blacklisted_users:
+                raise Exception("You can't check the balance of a blacklisted user.")
             
             guild = ctx.bot.get_guild(ctx.guild.id) # find ID by right clicking on server icon and choosing "copy id" at the bottom
             if guild.get_member(user_id) is None:
