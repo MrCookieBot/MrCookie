@@ -69,7 +69,10 @@ async def bal(ctx, user_id = "0"):
             else:
                 user = ctx.bot.get_user(user_id)
             
+            # add the guild if not already in database
             # check if the user is in the database, if not add them
+            if ctx.guild.id not in cookieDict:
+                cookieDict[ctx.guild.id] = {}
             if user_id not in cookieDict[ctx.guild.id]:
                 cookieDict[ctx.guild.id][user_id] = {**userData}
 
