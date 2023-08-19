@@ -1,8 +1,5 @@
 import discord
 from discord.ext import commands
-import asyncio
-from motor.motor_asyncio import AsyncIOMotorClient
-from pymongo.server_api import ServerApi
 from datetime import datetime, timedelta
 
 # dictionaries

@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
-from config import token
-from collect_cookie import collect_cookie
+from config import token, uri_p
+from cookie_drops.collect_cookie import collect_cookie
 
 # for bot uptime tracking
 start_time = []
@@ -17,21 +17,21 @@ intents.members = True
 
 class MyBot(commands.Bot):
     async def setup_hook(self):
-        await self.load_extension("ping")
-        await self.load_extension("say")
-        await self.load_extension("daily")
-        await self.load_extension("bal")
-        await self.load_extension("leaderboard")
-        await self.load_extension("give")
-        await self.load_extension("eat")
-        await self.load_extension("generate")
-        await self.load_extension("info")
-        await self.load_extension("invite")
-        await self.load_extension("rob")
-        await self.load_extension("blacklist")
-        await self.load_extension("unblacklist")
+        await self.load_extension("commands.ping")
+        await self.load_extension("commands.say")
+        await self.load_extension("commands.daily")
+        await self.load_extension("commands.bal")
+        await self.load_extension("commands.leaderboard")
+        await self.load_extension("commands.give")
+        await self.load_extension("commands.eat")
+        await self.load_extension("commands.generate")
+        await self.load_extension("commands.info")
+        await self.load_extension("commands.invite")
+        await self.load_extension("commands.rob")
+        await self.load_extension("commands.blacklist")
+        await self.load_extension("commands.unblacklist")
         bot.remove_command('help') # remove the default help command
-        await self.load_extension("help") # add my own help command
+        await self.load_extension("commands.help") # add my own help command
 
     # send a msg when bot goes online
     async def on_ready(self):
@@ -44,12 +44,19 @@ class MyBot(commands.Bot):
 
 bot = MyBot(command_prefix='!!', intents=intents)
 
+# database stuff
+import motor.motor_asyncio
+from motor.motor_asyncio import AsyncIOMotorClient
+
+client = motor.motor_asyncio.AsyncIOMotorClient()
+
+mongo: AsyncIOMotorClient = AsyncIOMotorClient(uri_p)
 
 # on_message
 @bot.event
 async def on_message(message):
     if not message.author.bot:
-        from blacklist import blacklisted_users
+        from commands.blacklist import blacklisted_users
         if message.author.id not in blacklisted_users:
             await collect_cookie(message)
             await bot.process_commands(message)

@@ -1,8 +1,8 @@
 import discord
 from discord.ext import commands
-from daily import cookieDict
+from commands.daily import cookieDict
 from datetime import datetime, timedelta
-from custom_messages import pass_list, fail_list
+from misc.custom_messages import pass_list, fail_list
 
 import random
 
@@ -32,7 +32,7 @@ async def rob(ctx, user_id = "0"):
                 raise Exception("You sent an invalid user.")
             
             # check if user is blacklisted
-            from blacklist import blacklisted_users
+            from commands.blacklist import blacklisted_users
             if user_id in blacklisted_users:
                 raise Exception("You can't rob a blacklisted user.")
 

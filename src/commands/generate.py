@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
-from daily import cookieDict
-from say import Admins
+from commands.daily import cookieDict
+from commands.say import Admins
 
 
 # userData dictionary to put their data in cookieDict
@@ -31,7 +31,7 @@ async def generate(ctx, user_id = "<@!0>", amount = "0"):
             raise Exception("Invalid user or not in the guild.")
         
         # check if user is blacklisted
-        from blacklist import blacklisted_users
+        from commands.blacklist import blacklisted_users
         if user_id in blacklisted_users:
             raise Exception("You can't generate cookies to a blacklisted user.")
 

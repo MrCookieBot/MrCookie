@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
-from daily import cookieDict
+from commands.daily import cookieDict
+
 
 
 @commands.command()

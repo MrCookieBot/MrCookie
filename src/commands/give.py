@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from daily import cookieDict
+from commands.daily import cookieDict
 
 # userData dictionary to put their data in cookieDict
 userData = {"Streaks": 0, "ExpTime": None, "Cookies": 0, "Multiplier": 0, "RobExp": None}
@@ -19,7 +19,7 @@ async def give(ctx, user_id = "<@!0>", amount = "0"):
             raise Exception("You forgot to tag a user and amount to give.")
         
         # check if user is blacklisted
-        from blacklist import blacklisted_users
+        from commands.blacklist import blacklisted_users
         if user_id in blacklisted_users:
             raise Exception("You can't give cookies to a blacklisted user.")
 

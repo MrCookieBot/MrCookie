@@ -3,7 +3,7 @@ from discord.ext import commands
 import asyncio
 from datetime import datetime, timedelta
 import random
-from custom_messages import drop_list
+from misc.custom_messages import drop_list
 
 lastUserDict = {}
 userTime = {"time": datetime.now() + timedelta(seconds = 90)}

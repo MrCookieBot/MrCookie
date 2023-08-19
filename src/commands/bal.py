@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from daily import cookieDict 
+from commands.daily import cookieDict 
 
 
 # get the rank 
@@ -55,7 +55,7 @@ async def bal(ctx, user_id = "0"):
             if len(str(user_id)) < 17:
                 raise Exception("You sent an invalid user.")
             # check if user is blacklisted
-            from blacklist import blacklisted_users
+            from commands.blacklist import blacklisted_users
             if user_id in blacklisted_users:
                 raise Exception("You can't check the balance of a blacklisted user.")
             

@@ -8,7 +8,7 @@ from os import getpid # for tracking memory usage
 import datetime # for tracking uptime
 import time # for tracking uptime
 
-from daily import cookieDict
+from commands.daily import cookieDict
 
 start_time = time.time()
 

@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from daily import cookieDict
+from commands.daily import cookieDict
 import asyncio
 from datetime import datetime, timedelta
 

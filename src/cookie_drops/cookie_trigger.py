@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 from collect_cookie import drop_list_dict
-from daily import cookieDict
+from commands.daily import cookieDict
 
 
 # userData dictionary
