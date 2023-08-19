@@ -1,12 +1,13 @@
 import discord
 from discord.ext import commands
 from commands.say import Admins
+from config import file
 
 # load in the current blacklisted users
 
 blacklisted_users = []
 
-openFile = open("/Users/ebarrer/Programming/MrCookie/src/misc/BlacklistedUsers.txt", "r") # open the blacklisted users file
+openFile = open(file, "r") # open the blacklisted users file
 lines = openFile.readlines() # read the lines
 openFile.close() # close the blacklisted file
 
