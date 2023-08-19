@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 from commands.say import Admins
+from config import file
 
 
 @commands.command()
@@ -40,7 +41,7 @@ async def unblacklist(ctx, user_id = "0"):
 
         blacklisted_users.remove(user_id) # remove the user from the blacklisted_users list
 
-        openFile = open("BlacklistedUsers.txt", "w") # open the blacklisted file
+        openFile = open(file, "w") # open the blacklisted file
 
         for user_name in blacklisted_users:
             openFile.write(str(user_name) + "\n") # remake the file but without the blacklisted user
