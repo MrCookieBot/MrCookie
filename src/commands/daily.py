@@ -2,6 +2,9 @@ import discord
 from discord.ext import commands
 from datetime import datetime, timedelta
 
+from misc.database import do_update, do_find_one
+
+
 # dictionaries
 cookieDict = {}
 
@@ -15,66 +18,78 @@ base_cookies = 15
 async def daily(ctx):
 
     try:
-        # check if guild/user is in database
-        if ctx.guild.id not in cookieDict:
-            cookieDict[ctx.guild.id] = {}
-        if ctx.author.id in cookieDict[ctx.guild.id]: # if user has run daily before, pull up their data
-            if cookieDict[ctx.guild.id][ctx.author.id]["ExpTime"] == None or datetime.now() >= cookieDict[ctx.guild.id][ctx.author.id]["ExpTime"]: # check if their exp date is over
+        # check if user is in database
+        if await do_find_one({"_id": str(ctx.guild.id), "users." + str(ctx.author.id): {"$exists": True}}) != None:
+            data = (await do_find_one({"_id": str(ctx.guild.id), "users." + str(ctx.author.id): {"$exists": True}})) # put the database for the user into this variable
+            if data["users"][str(ctx.author.id)]["ExpTime"] == None or datetime.now() >= data["users"][str(ctx.author.id)]["ExpTime"]: # check if their exp date is over
             
                 # check if their streak expired
-                if cookieDict[ctx.guild.id][ctx.author.id]["ExpTime"]== None:
-                    cookieDict[ctx.guild.id][ctx.author.id]["Streaks"] = cookieDict[ctx.guild.id][ctx.author.id]["Streaks"] + 1 # add 1 to daily streak
+                if data["users"][str(ctx.author.id)]["ExpTime"] == None:
+                    new_streak = int(data["users"][str(ctx.author.id)]["Streaks"]) + 1 # add 1 to daily streak
+                    await do_update({"_id": str(ctx.guild.id)}, {'$set': {"users." + str(ctx.author.id) + "." + "Streaks": new_streak}})
                 else:
-                    if datetime.now() > cookieDict[ctx.guild.id][ctx.author.id]["ExpTime"] + timedelta(hours = 23):
-                        cookieDict[ctx.guild.id][ctx.author.id]["Streaks"] = 1 # reset their streak if it's been over 24 hours since exptime
+                    if datetime.now() > data["users"][str(ctx.author.id)]["ExpTime"] + timedelta(hours = 23):
+                        new_streak = 1 # reset their streak if it's been over 24 hours since exptime
+                        await do_update({"_id": str(ctx.guild.id)}, {'$set': {"users." + str(ctx.author.id) + "." + "Streaks": new_streak}})
                     else:
-                        cookieDict[ctx.guild.id][ctx.author.id]["Streaks"] = cookieDict[ctx.guild.id][ctx.author.id]["Streaks"] + 1 # add 1 to daily streak
+                        new_streak = int(data["users"][str(ctx.author.id)]["Streaks"] + 1)
+                        await do_update({"_id": str(ctx.guild.id)}, {'$set': {"users." + str(ctx.author.id) + "." + "Streaks": new_streak}}) # add 1 to daily streak
 
                 # figure out weekly bonus
+                data = (await do_find_one({"_id": str(ctx.guild.id), "users." + str(ctx.author.id): {"$exists": True}})) # refresh the data dict with new database data
                 weekly_reward = 0 # the beginner weekly_reward if user does not reach 10 streaks
-                if cookieDict[ctx.guild.id][ctx.author.id]["Streaks"] % 10 == 0:  ## meaning they just hit a streak 10,20,30,40, etc
-                    weekly_multiplier = cookieDict[ctx.guild.id][ctx.author.id]["Streaks"] // 1 # find out their 10 day bonus
+                if int(data["users"][str(ctx.author.id)]["Streaks"]) % 10 == 0:  ## meaning they just hit a streak 10,20,30,40, etc
+                    weekly_multiplier = int(data["users"][str(ctx.author.id)]["Streaks"]) // 1 # find out their 10 day bonus
                     if weekly_multiplier > 60:
                         weekly_reward = 60
                     else:
                         weekly_reward = weekly_multiplier
                 
                 # figure out their daily bonus
-                if cookieDict[ctx.guild.id][ctx.author.id]["Streaks"] // 14 == 0: # check if user hit another 14th multiple streak
-                    if cookieDict[ctx.guild.id][ctx.author.id]["Multiplier"] < 50: # check if user hit 50 multiplier yet
-                        cookieDict[ctx.guild.id][ctx.author.id]["Multiplier"] = cookieDict[ctx.guild.id][ctx.author.id]["Multiplier"] + 5 # if not, add 5
-                if cookieDict[ctx.guild.id][ctx.author.id]["Streaks"] == 1: # if streak reset, reset multiplier as well
-                    cookieDict[ctx.guild.id][ctx.author.id]["Multiplier"] = 0
+                if int(data["users"][str(ctx.author.id)]["Streaks"]) // 14 == 0: # check if user hit another 14th multiple streak
+                    if int(data["users"][str(ctx.author.id)]["Multiplier"]) < 50: # check if user hit 50 multiplier yet
+                        new_multiplier = int(data["users"][str(ctx.author.id)]["Multiplier"]) + 5
+                        do_update({"_id": str(ctx.guild.id)}, {'$set': {"users." + str(ctx.author.id) + "." + "Multiplier": new_multiplier}}) # if not, add 5
+                if int(data["users"][str(ctx.author.id)]["Streaks"]) == 1: # if streak reset, reset multiplier as well
+                    new_multiplier = 0
+                    do_update({"_id": str(ctx.guild.id)}, {'$set': {"users." + str(ctx.author.id) + "." + "Multiplier": new_multiplier}})
             
 
                 # add their streaks and cookies up
-                total = base_cookies + cookieDict[ctx.guild.id][ctx.author.id]["Multiplier"]
-                cookieDict[ctx.guild.id][ctx.author.id]["Cookies"] = cookieDict[ctx.guild.id][ctx.author.id]["Cookies"] + total + weekly_reward # add up daily cookies
-                cookieDict[ctx.guild.id][ctx.author.id]["ExpTime"] = datetime.now() + timedelta(hours = 23) # set expiration date
+                data = (await do_find_one({"_id": str(ctx.guild.id), "users." + str(ctx.author.id): {"$exists": True}})) # refresh the data dict with new database data
+
+                total = base_cookies + int(data["users"][str(ctx.author.id)]["Multiplier"])
+                new_cookies = int(data["users"][str(ctx.author.id)]["Cookies"]) + total + weekly_reward # add up daily cookies
+                await do_update({"_id": str(ctx.guild.id)}, {'$set': {"users." + str(ctx.author.id) + "." + "Streaks": new_cookies}})
+                
+                new_ExpTime = datetime.now() + timedelta(hours = 23) # set expiration date
+                do_update({"_id": str(ctx.guild.id)}, {'$set': {"users." + str(ctx.author.id) + "." + "ExpTime": new_ExpTime}})
 
                 # send the embed
+                data = (await do_find_one({"_id": str(ctx.guild.id), "users." + str(ctx.author.id): {"$exists": True}})) # refresh the data dict with new database data
+
                 embed = discord.Embed(
                     description = "You have collected your daily ``" + str(total) + "`` cookies!" + "\n" + 
-                    "You are now on a streak of ``" + str(cookieDict[ctx.guild.id][ctx.author.id]["Streaks"]) + "`` day.",
+                    "You are now on a streak of ``" + str(data["users"][str(ctx.author.id)]["Streaks"]) + "`` day.",
                     color = 0x2ecc71,
-                    timestamp = cookieDict[ctx.guild.id][ctx.author.id]["ExpTime"]
+                    timestamp = data["users"][str(ctx.author.id)]["ExpTime"]
                     )
 
                 embed.set_author(name = "Daily Cookies - " + str(ctx.author.name), icon_url = ctx.author.display_avatar)
                 embed.set_footer(text = "You can collect again in 24 hours.")
 
-                if cookieDict[ctx.guild.id][ctx.author.id]["Streaks"] % 10 == 0: # bonus cookies every 10 day message
-                    embed.add_field(name = "🍪 Bonus Cookies!", value = "For reaching a streak of **" + str(cookieDict[ctx.guild.id][ctx.author.id]["Streaks"]) + "**, you receieved **" + str(weekly_multiplier) + "** extra cookies.", inline = True)
+                if int(data["users"][str(ctx.author.id)]["Streaks"]) % 10 == 0: # bonus cookies every 10 day message
+                    embed.add_field(name = "🍪 Bonus Cookies!", value = "For reaching a streak of **" + str(data["users"][str(ctx.author.id)]["Streaks"]) + "**, you receieved **" + str(weekly_multiplier) + "** extra cookies.", inline = True)
             
                 await ctx.send(embed=embed)
 
 
             else: # send not time yet embed
-                mathtime = int(cookieDict[ctx.guild.id][ctx.author.id]["ExpTime"].timestamp()) # doing the math for embed timer
+                mathtime = int(data["users"][str(ctx.author.id)]["ExpTime"].timestamp()) # doing the math for embed timer
                 embed = discord.Embed(
                     description = "You can collect your daily cookies " + "<t:" + str(mathtime) + ":R>",
                     color = 0x992d22,
-                    timestamp = cookieDict[ctx.guild.id][ctx.author.id]["ExpTime"]
+                    timestamp = data["users"][str(ctx.author.id)]["ExpTime"]
                     )
 
                 embed.set_author(name = "Keep waiting " + str(ctx.author.name), icon_url = ctx.author.display_avatar)
@@ -83,14 +98,16 @@ async def daily(ctx):
 
 
         else: # If user has never run daily before, collect their data for cookieDict
-            cookieDict[ctx.guild.id][ctx.author.id] = {**userData}
+            await do_update({"_id": str(ctx.guild.id)}, {'$set': {"users." + str(ctx.author.id) : {**userData}}})
+            data = (await do_find_one({"_id": str(ctx.guild.id), "users." + str(ctx.author.id): {"$exists": True}}))
+
 
             # send the embed
             embed = discord.Embed(
                 description = "You have collected your daily ``15`` cookies!" + "\n" + 
-                "You are now on a streak of ``" + str(cookieDict[ctx.guild.id][ctx.author.id]["Streaks"]) + "`` day.", 
+                "You are now on a streak of ``" + str(data["users"][str(ctx.author.id)]["Streaks"]) + "`` day.", 
                 color = 0x2ecc71,
-                timestamp = cookieDict[ctx.guild.id][ctx.author.id]["ExpTime"]
+                timestamp = data["users"][str(ctx.author.id)]["ExpTime"]
                 )
 
             embed.set_author(name = "Daily Cookies - " + str(ctx.author.name), icon_url = ctx.author.display_avatar)
