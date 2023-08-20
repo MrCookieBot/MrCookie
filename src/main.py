@@ -1,7 +1,8 @@
 import discord
 from discord.ext import commands
-from config import token, uri_p
+from config import token
 from cookie_drops.collect_cookie import collect_cookie
+from misc.database import do_insert, do_find_one
 
 # for bot uptime tracking
 start_time = []
@@ -39,18 +40,17 @@ class MyBot(commands.Bot):
         await channel.send("CookieBot has restarted and is back online.") # post message upon turning on
         await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name=".help")) # change bot status
 
+    # on_guild_join
+    async def on_guild_join(self, guild):
+        if await do_find_one({"_id": str(guild.id)}) == None:
+            await do_insert({"_id": str(guild.id)})
+
+
 
 # prefix
 
 bot = MyBot(command_prefix='!!', intents=intents)
 
-# database stuff
-import motor.motor_asyncio
-from motor.motor_asyncio import AsyncIOMotorClient
-
-client = motor.motor_asyncio.AsyncIOMotorClient()
-
-mongo: AsyncIOMotorClient = AsyncIOMotorClient(uri_p)
 
 # on_message
 @bot.event
@@ -65,5 +65,5 @@ async def on_message(message):
 
 
 # token
-
-bot.run(token)
+if __name__ == "__main__":
+    bot.run(token)
