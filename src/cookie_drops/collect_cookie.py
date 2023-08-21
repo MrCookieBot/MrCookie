@@ -25,7 +25,7 @@ async def collect_cookie(message):
         # if active prompt, listen to it first
         if channel_id in drop_list_dict:
             await channel.fetch_message(drop_list_dict[channel_id]["embed_id"]) #try to fetch the message, if no fetch then it got deleted
-            from cookie_trigger import cookie_trigger
+            from cookie_drops.cookie_trigger import cookie_trigger
             await cookie_trigger(message)
             return
 

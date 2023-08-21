@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from commands.daily import cookieDict
+from misc.database import do_update, do_find_one
 from commands.say import Admins
 
 
@@ -36,8 +36,8 @@ async def generate(ctx, user_id = "<@!0>", amount = "0"):
             raise Exception("You can't generate cookies to a blacklisted user.")
 
         # check the amount
-        if amount > 5000: # generate limit
-            raise Exception("You can't generate more than 5,000 cookies at a time.")
+        if amount > 1000: # generate limit
+            raise Exception("You can't generate more than 1,000 cookies at a time.")
         
         if amount == 0.0:
             raise Exception("You forgot to include an amount to give.")
@@ -50,16 +50,17 @@ async def generate(ctx, user_id = "<@!0>", amount = "0"):
             tense = " to "
 
         # if the receiver is not in the dictionary, add them    
-        if ctx.guild.id not in cookieDict:            
-            cookieDict[ctx.guild.id] = {}
-        if user_id not in cookieDict[ctx.guild.id]:
-            cookieDict[ctx.guild.id][user_id] = {**userData}
+        if await do_find_one({"_id": str(ctx.guild.id), "users." + str(user_id): {"$exists": True}}) == None:
+            await do_update({"_id": str(ctx.guild.id)}, {'$set': {"users." + str(user_id) : {**userData}}})
 
         # generate the cookies if no errors have been raised
-        if cookieDict[ctx.guild.id][user_id]["Cookies"] + amount < 0: # no letting the user go in negative cookies
+        data = (await do_find_one({"_id": str(ctx.guild.id), "users." + str(ctx.author.id): {"$exists": True}})) # refresh the data dict with new database data
+
+        if int(data["users"][str(user_id)]["Cookies"]) + amount < 0: # no letting the user go in negative cookies
             raise Exception("You can't put the user in negative cookies.")
         else:
-            cookieDict[ctx.guild.id][user_id]["Cookies"] = cookieDict[ctx.guild.id][user_id]["Cookies"] + amount
+            new_cookies = int(data["users"][str(user_id)]["Cookies"]) + amount
+            await do_update({"_id": str(ctx.guild.id)}, {'$set': {"users." + str(ctx.author.id) + "." + "Cookies": new_cookies}})
 
         # get user information to tag them, try get_user and if that fails then fetch_user
         if ctx.bot.get_user(user_id) == None:

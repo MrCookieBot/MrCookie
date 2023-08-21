@@ -5,9 +5,7 @@ from datetime import datetime, timedelta
 from misc.database import do_update, do_find_one
 
 
-# dictionaries
-cookieDict = {}
-
+# user replica dictionary
 userData = {"Streaks": 1, "ExpTime": datetime.now() + timedelta(hours = 23), "Cookies": 15, "Multiplier": 0, "RobExp": None}
 
 # cookie calculations
@@ -49,10 +47,10 @@ async def daily(ctx):
                 if int(data["users"][str(ctx.author.id)]["Streaks"]) // 14 == 0: # check if user hit another 14th multiple streak
                     if int(data["users"][str(ctx.author.id)]["Multiplier"]) < 50: # check if user hit 50 multiplier yet
                         new_multiplier = int(data["users"][str(ctx.author.id)]["Multiplier"]) + 5
-                        do_update({"_id": str(ctx.guild.id)}, {'$set': {"users." + str(ctx.author.id) + "." + "Multiplier": new_multiplier}}) # if not, add 5
+                        await do_update({"_id": str(ctx.guild.id)}, {'$set': {"users." + str(ctx.author.id) + "." + "Multiplier": new_multiplier}}) # if not, add 5
                 if int(data["users"][str(ctx.author.id)]["Streaks"]) == 1: # if streak reset, reset multiplier as well
                     new_multiplier = 0
-                    do_update({"_id": str(ctx.guild.id)}, {'$set': {"users." + str(ctx.author.id) + "." + "Multiplier": new_multiplier}})
+                    await do_update({"_id": str(ctx.guild.id)}, {'$set': {"users." + str(ctx.author.id) + "." + "Multiplier": new_multiplier}})
             
 
                 # add their streaks and cookies up
@@ -60,10 +58,10 @@ async def daily(ctx):
 
                 total = base_cookies + int(data["users"][str(ctx.author.id)]["Multiplier"])
                 new_cookies = int(data["users"][str(ctx.author.id)]["Cookies"]) + total + weekly_reward # add up daily cookies
-                await do_update({"_id": str(ctx.guild.id)}, {'$set': {"users." + str(ctx.author.id) + "." + "Streaks": new_cookies}})
+                await do_update({"_id": str(ctx.guild.id)}, {'$set': {"users." + str(ctx.author.id) + "." + "Cookies": new_cookies}})
                 
                 new_ExpTime = datetime.now() + timedelta(hours = 23) # set expiration date
-                do_update({"_id": str(ctx.guild.id)}, {'$set': {"users." + str(ctx.author.id) + "." + "ExpTime": new_ExpTime}})
+                await do_update({"_id": str(ctx.guild.id)}, {'$set': {"users." + str(ctx.author.id) + "." + "ExpTime": new_ExpTime}})
 
                 # send the embed
                 data = (await do_find_one({"_id": str(ctx.guild.id), "users." + str(ctx.author.id): {"$exists": True}})) # refresh the data dict with new database data

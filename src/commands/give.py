@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
-from commands.daily import cookieDict
+from misc.database import do_update, do_find_one
+
 
 # userData dictionary to put their data in cookieDict
 userData = {"Streaks": 0, "ExpTime": None, "Cookies": 0, "Multiplier": 0, "RobExp": None}
@@ -33,38 +34,48 @@ async def give(ctx, user_id = "<@!0>", amount = "0"):
         if amount < 0.0:
             raise Exception("Don't be cheap, send more than 0 cookies!")
 
-        # if the sender/receiver is not in the dictionary, add them, also add the guild_id
-        if ctx.guild.id not in cookieDict:            
-            cookieDict[ctx.guild.id] = {}
-
-        if ctx.author.id not in cookieDict[ctx.guild.id]:
-            cookieDict[ctx.guild.id][ctx.author.id] = {**userData}
+        # if the sender is not in the dictionary, add them    
+        if await do_find_one({"_id": str(ctx.guild.id), "users." + str(ctx.author.id): {"$exists": True}}) == None:
+            await do_update({"_id": str(ctx.guild.id)}, {'$set': {"users." + str(ctx.author.id) : {**userData}}})
             
-        if user_id not in cookieDict:
-            cookieDict[ctx.guild.id][user_id] = {**userData}
+        # if the receiver is not in the dictionary, add them    
+        if await do_find_one({"_id": str(ctx.guild.id), "users." + str(user_id): {"$exists": True}}) == None:
+            await do_update({"_id": str(ctx.guild.id)}, {'$set': {"users." + str(user_id) : {**userData}}})
 
         # if sender doesn't have enough cookies, raise an error
+        data = (await do_find_one({"_id": str(ctx.guild.id), "users." + str(ctx.author.id): {"$exists": True}})) # refresh the data dict with new database data
 
-        if cookieDict[ctx.guild.id][ctx.author.id]["Cookies"] < amount:
+        if int(data["users"][str(ctx.author.id)]["Cookies"]) < amount:
             raise Exception("You don't have that many cookies!")
            
         
         # transfer the cookies if no errors have been raised
-        cookieDict[ctx.guild.id][user_id]["Cookies"] = cookieDict[ctx.guild.id][user_id]["Cookies"] + amount
-        cookieDict[ctx.guild.id][ctx.author.id]["Cookies"] = cookieDict[ctx.guild.id][ctx.author.id]["Cookies"] - amount
+        new_cookies = int(data["users"][str(user_id)]["Cookies"]) + amount
+        await do_update({"_id": str(ctx.guild.id)}, {'$set': {"users." + str(user_id) + "." + "Cookies": new_cookies}})
+
+        new_cookies2 = int(data["users"][str(ctx.author.id)]["Cookies"]) - amount
+        await do_update({"_id": str(ctx.guild.id)}, {'$set': {"users." + str(ctx.author.id) + "." + "Cookies": new_cookies2}})
+
+        # fetch/get_user information from receiver
+        if ctx.bot.get_user(user_id) == None:
+            receieve_user = await ctx.bot.fetch_user(user_id)
+        else:
+            receieve_user = ctx.bot.get_user(user_id)
+        
+        # get_user information from sender
+        sender_user = ctx.bot.get_user(ctx.author.id)
 
         # send the transfer embed
+        data = (await do_find_one({"_id": str(ctx.guild.id), "users." + str(ctx.author.id): {"$exists": True}})) # refresh the data dict with new database data
+
         embed = discord.Embed(
             title = "🍪 Cookies Transferred!",
-            description = "<@!" + str(ctx.author.id) + "> just gave <@!" + str(user_id) + "> ``" + str(amount) + "`` cookies!",
+            description = sender_user.mention + " just gave " + receieve_user.mention + " ``" + str(amount) + "`` cookies!",
             color = 0x2ecc71,
             )
 
         #for footer, try get_user and if that fails then fetch_user
-        if ctx.bot.get_user(user_id) == None:
-            embed.set_footer(text = str(await ctx.bot.fetch_user(user_id)) + " now has " + str(cookieDict[ctx.guild.id][user_id]["Cookies"]) + " cookies.")
-        else:
-            embed.set_footer(text = str(ctx.bot.get_user(user_id)) + " now has " + str(cookieDict[ctx.guild.id][user_id]["Cookies"]) + " cookies.")
+        embed.set_footer(text = receieve_user.display_name + " now has " + str(data["users"][str(user_id)]["Cookies"]) + " cookies.")
             
         await ctx.send(embed=embed)
 

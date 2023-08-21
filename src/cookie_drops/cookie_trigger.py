@@ -1,8 +1,8 @@
 import discord
 from discord.ext import commands
-from collect_cookie import drop_list_dict
-from commands.daily import cookieDict
+from cookie_drops.collect_cookie import drop_list_dict
 
+from misc.database import do_update, do_find_one
 
 # userData dictionary
 
@@ -11,20 +11,21 @@ userData = {"Streaks": 0, "ExpTime": None, "Cookies": 0, "Multiplier": 0, "RobEx
 
 async def cookie_trigger(message):
     try:
-        # check if guild/user is in database
-        if message.guild.id not in cookieDict:
-            cookieDict[message.guild.id] = {}
-        if message.author.id not in cookieDict[message.guild.id]: # add user to database if not in it
-            cookieDict[message.guild.id][message.author.id] = {**userData}
-
         channel =  message.channel
         channel_id = message.channel.id
         currentUser = message.author
     
         # if the message matches the drop_msg, reward the first user who said it the cookies
         if message.content == str(drop_list_dict[channel_id]["msg"]):
+            # check if first user is in database, if not add them
+            if await do_find_one({"_id": str(message.guild.id), "users." + str(message.author.id): {"$exists": True}}) == None:
+                await do_update({"_id": str(message.guild.id)}, {'$set': {"users." + str(message.author.id) : {**userData}}})
+
             # reward the first user
-            cookieDict[message.guild.id][currentUser.id]["Cookies"] = cookieDict[message.guild.id][currentUser.id]["Cookies"] + int(drop_list_dict[channel_id]["cookies"])
+            data = (await do_find_one({"_id": str(message.guild.id), "users." + str(message.author.id): {"$exists": True}})) # refresh the data dict with new database data
+
+            new_cookies = int(data["users"][str(message.author.id)]["Cookies"]) + int(drop_list_dict[channel_id]["cookies"])
+            await do_update({"_id": str(message.guild.id)}, {'$set': {"users." + str(message.author.id) + "." + "Cookies": new_cookies}})
 
             # send who got the reward
             await channel.send(str(message.author.mention) + " (" + str(message.author.display_name) + ") collected " + str(drop_list_dict[channel_id]["cookies"]) + " cookies!", delete_after = 5)

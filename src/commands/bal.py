@@ -1,21 +1,23 @@
 import discord
 from discord.ext import commands
-from commands.daily import cookieDict 
+
+from misc.database import do_update, do_find_one
+
 
 
 # get the rank 
 
-def position(guild_id, author_id):
+def position(author_id, data):
     def sorting(values):
-        return cookieDict[guild_id][values]['Cookies']
+        return data["users"][str(values)]["Cookies"]
 
     rank = 0
-    cookielist = list(cookieDict[guild_id])
+    cookielist = list(data["users"])
     cookielist.sort(reverse = True, key = sorting)
   
 
     for key in cookielist:
-        if key == author_id:
+        if int(key) == author_id:
             rank = cookielist.index(key) + 1
             break
     
@@ -46,10 +48,9 @@ async def bal(ctx, user_id = "0"):
             user_id = ctx.author.id
             user = ctx.author
             # check if the user is in the database, if not add them
-            if ctx.guild.id not in cookieDict:
-                cookieDict[ctx.guild.id] = {}
-            if ctx.author.id not in cookieDict[ctx.guild.id]:
-                cookieDict[ctx.guild.id][user_id] = {**userData}
+            if await do_find_one({"_id": str(ctx.guild.id), "users." + str(user_id): {"$exists": True}}) == None:
+                print("I was not supposed to run")
+                await do_update({"_id": str(ctx.guild.id)}, {'$set': {"users." + str(user_id) : {**userData}}})
         else:
             # checking if the user is legit
             if len(str(user_id)) < 17:
@@ -69,15 +70,16 @@ async def bal(ctx, user_id = "0"):
             else:
                 user = ctx.bot.get_user(user_id)
             
-            # add the guild if not already in database
             # check if the user is in the database, if not add them
-            if ctx.guild.id not in cookieDict:
-                cookieDict[ctx.guild.id] = {}
-            if user_id not in cookieDict[ctx.guild.id]:
-                cookieDict[ctx.guild.id][user_id] = {**userData}
+            if await do_find_one({"_id": str(ctx.guild.id), "users." + str(user_id): {"$exists": True}}) == None:
+                await do_update({"_id": str(ctx.guild.id)}, {'$set': {"users." + str(user_id) : {**userData}}})
+
 
         # get the user's rank
-        user_rank = position(ctx.guild.id, user_id)
+        data = (await do_find_one({"_id": str(ctx.guild.id), "users." + str(user_id): {"$exists": True}})) # refresh the data dict with new database data
+
+        user_rank = position(user_id, data)
+
 
         # send the embed
         embed = discord.Embed(
@@ -86,7 +88,7 @@ async def bal(ctx, user_id = "0"):
             )
     
     
-        embed.add_field(name = "Cookies", value = str(cookieDict[ctx.guild.id][user.id]["Cookies"]), inline = True)
+        embed.add_field(name = "Cookies", value = str(data["users"][str(user_id)]["Cookies"]), inline = True)
         embed.add_field(name = "Rank", value = "#" + str(user_rank), inline = True)
         embed.set_thumbnail(url = user.display_avatar)
 

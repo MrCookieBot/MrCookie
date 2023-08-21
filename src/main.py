@@ -60,8 +60,6 @@ async def on_message(message):
         if message.author.id not in blacklisted_users:
             await collect_cookie(message)
             await bot.process_commands(message)
-        else:
-            await message.channel.send("You're blacklisted from MrCookie.")
 
 
 # token

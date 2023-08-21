@@ -8,7 +8,7 @@ from os import getpid # for tracking memory usage
 import datetime # for tracking uptime
 import time # for tracking uptime
 
-from commands.daily import cookieDict
+from misc.database import do_find
 
 start_time = time.time()
 
@@ -43,8 +43,10 @@ async def info(ctx):
         info_embed.add_field(name = "Version", value = "Alpha", inline = True)
     
         total_users = 0 # count how many total users are in the database
-        for guild in cookieDict:
-            total_users += len(cookieDict[guild])
+        data = await do_find() # get the data from database
+
+        for guild_dict in data: # add up all the users
+            total_users += len(guild_dict["users"])
         info_embed.add_field(name = "Users", value = total_users, inline = True)
     
         info_embed.add_field(name = "Guilds", value = len(ctx.bot.guilds), inline = True)

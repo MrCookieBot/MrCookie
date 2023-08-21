@@ -1,34 +1,37 @@
 import discord
 from discord.ext import commands
-from commands.daily import cookieDict
+from misc.database import do_find_one
 import asyncio
 from datetime import datetime, timedelta
 
 
 # get the rank 
 
-def position(guild_id, author_id):
+async def position(guild_id, user_id, data):
 
     def sorting(values):
-        return cookieDict[guild_id][values]['Cookies']
+        return data["users"][str(values)]["Cookies"]
 
-    cookielist = list(cookieDict[guild_id])
+
+    rank = 0
+    cookielist = list(data["users"])
     cookielist.sort(reverse = True, key = sorting)
 
     final_list = []
     rank = 0
 
+
     for key in cookielist:
-        if author_id not in cookieDict[guild_id]: # if they are no in database, they have no position
+        if await do_find_one({"_id": str(guild_id), "users." + str(user_id): {"$exists": True}}) == None:
             final_list.append("None")
             final_list.append(cookielist)
             break
-        if key == author_id:
+        if int(key) == user_id:
             rank = cookielist.index(key) + 1
             final_list.append(rank)
             final_list.append(cookielist)
             break
-    
+
     return final_list
 
 
@@ -37,12 +40,14 @@ def position(guild_id, author_id):
 async def leaderboard(ctx):
 
     try:
-        # check if guild is in dictionary
-        if ctx.guild.id not in cookieDict:
-            raise Exception("Leaderboard is empty, run .daily to create one.")
 
         # find the position of who made the cmd
-        final_list = position(ctx.guild.id, ctx.author.id)
+        data = await do_find_one({"_id": str(ctx.guild.id), "users": {"$exists": True}})
+
+        if len(data["users"]) < 1: # if no one is in the database, do not show a leaderboard
+            raise Exception("There is no one in the leaderboard, run .daily to create one!")
+
+        final_list = await position(ctx.guild.id, ctx.author.id, data)
         pos = final_list[0]
         cookielist = final_list[1]
 
@@ -87,7 +92,7 @@ async def leaderboard(ctx):
                     user = ctx.bot.get_user(key)
         
                 # setting variables for organization
-                amount = cookieDict[ctx.guild.id][key]["Cookies"]
+                amount = data["users"][str(key)]["Cookies"]
                 rank = cookielist.index(key) + 1
                 index = currentlist.index(key) + 1
 

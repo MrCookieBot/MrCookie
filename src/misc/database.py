@@ -25,3 +25,9 @@ async def do_find_one(dict):
     document = await db.cookieDict.find_one(dict)
     return(document)
 
+# search for things from the database
+async def do_find():
+    cursor = db.cookieDict.find()
+    document = await cursor.to_list(None)
+    return document
+

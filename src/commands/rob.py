@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from commands.daily import cookieDict
+from misc.database import do_update, do_find_one
 from datetime import datetime, timedelta
 from misc.custom_messages import pass_list, fail_list
 
@@ -11,17 +11,16 @@ import random
 async def rob(ctx, user_id = "0"):
 
     try:
-        # check if guild/user is in database, if not add it
-        if ctx.guild.id not in cookieDict:
-            cookieDict[ctx.guild.id] = {}
-        if ctx.author.id not in cookieDict[ctx.guild.id]:
+        # check if user is in database, if not add them
+        if await do_find_one({"_id": str(ctx.guild.id), "users." + str(ctx.author.id): {"$exists": True}}) == None:
             raise Exception("You need at least 15 cookies to rob someone.")
         
         # make sure their rob cooldown is over
-        if cookieDict[ctx.guild.id][ctx.author.id]["RobExp"] == None or datetime.now() > cookieDict[ctx.guild.id][ctx.author.id]["RobExp"]:
+        data = (await do_find_one({"_id": str(ctx.guild.id), "users." + str(ctx.author.id): {"$exists": True}})) # refresh the data dict with new database data
 
+        if data["users"][str(ctx.author.id)]["RobExp"] == None or datetime.now() > data["users"][str(ctx.author.id)]["RobExp"]:
             # check if the sender has enough cookies to rob
-            if cookieDict[ctx.guild.id][ctx.author.id]["Cookies"] < 15:
+            if int(data["users"][str(ctx.author.id)]["Cookies"]) < 15:
                 raise Exception("You need at least 15 cookies to rob someone.")
     
             # check if user_id is valid
@@ -38,17 +37,17 @@ async def rob(ctx, user_id = "0"):
 
             # if user didn't mention someone, find someone random to rob user
             if user_id == 0:
-                if len(cookieDict[ctx.guild.id]) <= 2: # if no one is in the database, do not rob anyone
-                    raise Exception("No one in the guild meets the rob requirements.")
+                if len(data["users"]) <= 2: # if no one is in the database, do not rob anyone
+                    raise Exception("More than 2 people need at least 15 cookies to rob.")
                 
                 rob_list = []
-                for person in cookieDict[ctx.guild.id]: # create a list of every user in the server who has over 15 cookies
-                    if cookieDict[ctx.guild.id][person]["Cookies"] < 15:
+                for person in data["users"]: # create a list of every user in the server who has over 15 cookies
+                    if int(data["users"][str(person)]["Cookies"]) < 15:
                         continue
-                    if ctx.author.id == person: # make sure the sender themself isn't added to the list
+                    if ctx.author.id == int(person): # make sure the sender themself isn't added to the list
                         continue
                     else:
-                        rob_list.append(person)
+                        rob_list.append(int(person))
                 random_user = random.choice(range(0, len(rob_list)))
                 user_id = rob_list[random_user]
 
@@ -67,19 +66,20 @@ async def rob(ctx, user_id = "0"):
                     raise Exception("User is not in the guild.")
                 
                 # if user is not in the database, they cannot be robbed
-                if user_id not in cookieDict[ctx.guild.id]:
+                if await do_find_one({"_id": str(ctx.guild.id), "users." + str(user_id): {"$exists": True}}) == None:
                     raise Exception("User doesn't have enough cookies to be robbed.")
                 
                 # if user has less than 15 cookies, they cannot be robbed
-                if cookieDict[ctx.guild.id][user_id]["Cookies"] < 15:
+                if int(data["users"][str(user_id)]["Cookies"]) < 15:
                     raise Exception("User doesn't have enough cookies to be robbed.")
 
             # get_user's data to mention them in the rob message
             user = ctx.bot.get_user(user_id)
     
         
-            # add 3 hours to their rob cooldown again
-            cookieDict[ctx.guild.id][ctx.author.id]["RobExp"] = datetime.now() + timedelta(hours = 3)
+            # add 3 hours to their rob cooldown
+            new_timer = datetime.now() + timedelta(hours = 3)
+            await do_update({"_id": str(ctx.guild.id)}, {'$set': {"users." + str(ctx.author.id) + "." + "RobExp": new_timer}})
 
             # go through the robbing process of the user
 
@@ -89,18 +89,22 @@ async def rob(ctx, user_id = "0"):
                 pass_msg_chance = random.choice(range(0, len(pass_list))) # randomly pick which msg to use
                 pass_msg = pass_list[pass_msg_chance]
 
-                if cookieDict[ctx.guild.id][user_id]["Cookies"] <= 100: # if below 100 cookies, steal 1-10
+                if int(data["users"][str(user_id)]["Cookies"]) <= 100: # if below 100 cookies, steal 1-10
                     lost_cookies = random.choice(range(0, 6))
-                if cookieDict[ctx.guild.id][user_id]["Cookies"] > 100 and cookieDict[ctx.guild.id][user_id]["Cookies"] <= 1500: # if below 1,500 cookies, steal 0.8%
-                    lost_cookies = int(0.008 * cookieDict[ctx.guild.id][ctx.author.id]["Cookies"])
-                if cookieDict[ctx.guild.id][user_id]["Cookies"] > 1500: # if above 1,500 cookies, steal 0.16%
-                    lost_cookies = int(0.0016 * cookieDict[ctx.guild.id][ctx.author.id]["Cookies"])
+                if int(data["users"][str(user_id)]["Cookies"]) > 100 and int(data["users"][str(user_id)]["Cookies"]) <= 1500: # if below 1,500 cookies, steal 0.8%
+                    lost_cookies = int(0.008 * int(data["users"][str(ctx.author.id)]["Cookies"]))
+                if int(data["users"][str(user_id)]["Cookies"]) > 1500: # if above 1,500 cookies, steal 0.16%
+                    lost_cookies = int(0.0016 * int(data["users"][str(ctx.author.id)]["Cookies"]))
 
                 extra_losses = random.choice(range(5, 11)) # take an extra 5-10 cookies randomly
                 total_losses = lost_cookies + extra_losses # add all the losses up
 
-                cookieDict[ctx.guild.id][user_id]["Cookies"] = cookieDict[ctx.guild.id][user_id]["Cookies"] - total_losses
-                cookieDict[ctx.guild.id][ctx.author.id]["Cookies"] = cookieDict[ctx.guild.id][ctx.author.id]["Cookies"] + total_losses
+                new_cookies = int(data["users"][str(user_id)]["Cookies"]) - total_losses
+                await do_update({"_id": str(ctx.guild.id)}, {'$set': {"users." + str(user_id) + "." + "Cookies": new_cookies}})
+
+                new_cookies2 = int(data["users"][str(ctx.author.id)]["Cookies"]) + total_losses
+                await do_update({"_id": str(ctx.guild.id)}, {'$set': {"users." + str(ctx.author.id) + "." + "Cookies": new_cookies2}})
+
                 
                 # send the succeed embed
                 pass_embed = discord.Embed(
@@ -116,12 +120,15 @@ async def rob(ctx, user_id = "0"):
                 fail_msg_chance = random.choice(range(0, len(fail_list))) # randomly pick which msg to use
                 fail_msg = fail_list[fail_msg_chance]
 
-                lost_cookies = int(0.008 * cookieDict[ctx.guild.id][ctx.author.id]["Cookies"]) # take 0.8% of the robber's total cookies
+                lost_cookies = int(0.008 * int(data["users"][str(ctx.author.id)]["Cookies"])) # take 0.8% of the robber's total cookies
                 extra_losses = random.choice(range(5, 11)) # add an extra 5-10
                 total_losses = lost_cookies + extra_losses # add it all up
 
-                cookieDict[ctx.guild.id][ctx.author.id]["Cookies"] = cookieDict[ctx.guild.id][ctx.author.id]["Cookies"] - total_losses # remove the cookies from robber
-                cookieDict[ctx.guild.id][user_id]["Cookies"] = cookieDict[ctx.guild.id][user_id]["Cookies"] + total_losses # give the victim the cookies
+                new_cookies = int(data["users"][str(ctx.author.id)]["Cookies"]) - total_losses
+                await do_update({"_id": str(ctx.guild.id)}, {'$set': {"users." + str(ctx.author.id) + "." + "Cookies": new_cookies}})
+
+                new_cookies2 = int(data["users"][str(user_id)]["Cookies"]) + total_losses
+                await do_update({"_id": str(ctx.guild.id)}, {'$set': {"users." + str(user_id) + "." + "Cookies": new_cookies2}})
 
                 # send the fail embed
                 fail_embed = discord.Embed(
@@ -133,11 +140,11 @@ async def rob(ctx, user_id = "0"):
                 await ctx.send(embed=fail_embed)
     
         else:
-            mathtime = int(cookieDict[ctx.guild.id][ctx.author.id]["RobExp"].timestamp()) # doing the math for embed timer
+            mathtime = int(data["users"][str(ctx.author.id)]["RobExp"].timestamp()) # doing the math for embed timer
             timeout_embed = discord.Embed(
                 description = "You can rob someone again " + "<t:" + str(mathtime) + ":R>",
                 color = 0x992d22,
-                timestamp = cookieDict[ctx.guild.id][ctx.author.id]["RobExp"]
+                timestamp = data["users"][str(ctx.author.id)]["RobExp"]
                 )
 
             timeout_embed.set_author(name = "Not so fast " + str(ctx.author.name), icon_url = ctx.author.display_avatar)
