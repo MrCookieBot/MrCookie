@@ -33,8 +33,8 @@ class MyBot(commands.Bot):
         await self.load_extension("commands.info")
         await self.load_extension("commands.invite")
         await self.load_extension("commands.rob")
-        await self.load_extension("commands.blacklist")
-        await self.load_extension("commands.unblacklist")
+        #await self.load_extension("commands.blacklist")
+        #await self.load_extension("commands.unblacklist")
         bot.remove_command('help') # remove the default help command
         await self.load_extension("commands.help") # add my own help command
 
@@ -60,10 +60,12 @@ bot = MyBot(command_prefix='!!', intents=intents)
 @bot.event
 async def on_message(message):
     if not message.author.bot:
-        from commands.blacklist import blacklisted_users
-        if message.author.id not in blacklisted_users:
-            await collect_cookie(message)
-            await bot.process_commands(message)
+        await collect_cookie(message)
+        await bot.process_commands(message)
+        #from commands.blacklist import blacklisted_users
+        #if message.author.id not in blacklisted_users:
+            #await collect_cookie(message)
+            #await bot.process_commands(message)
 
 
 # token

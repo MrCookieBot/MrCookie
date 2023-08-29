@@ -56,9 +56,9 @@ async def bal(ctx, user_id = "0"):
             if len(str(user_id)) < 17:
                 raise Exception("You sent an invalid user.")
             # check if user is blacklisted
-            from commands.blacklist import blacklisted_users
-            if user_id in blacklisted_users:
-                raise Exception("You can't check the balance of a blacklisted user.")
+            #from commands.blacklist import blacklisted_users
+            #if user_id in blacklisted_users:
+                #raise Exception("You can't check the balance of a blacklisted user.")
             
             guild = ctx.bot.get_guild(ctx.guild.id) # find ID by right clicking on server icon and choosing "copy id" at the bottom
             if guild.get_member(user_id) is None:
