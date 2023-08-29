@@ -1,8 +1,13 @@
 import discord
 from discord.ext import commands
 from commands.say import Admins
-from config import file
 
+# env stuff
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
+file = os.getenv("file")
 
 @commands.command()
 async def unblacklist(ctx, user_id = "0"):

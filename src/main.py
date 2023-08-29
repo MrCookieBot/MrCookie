@@ -1,8 +1,12 @@
 import discord
 from discord.ext import commands
-from config import token
 from cookie_drops.collect_cookie import collect_cookie
 from misc.database import do_insert, do_find_one
+
+# env stuff
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
 # for bot uptime tracking
 start_time = []
@@ -64,4 +68,5 @@ async def on_message(message):
 
 # token
 if __name__ == "__main__":
+    token = os.getenv("token")
     bot.run(token)

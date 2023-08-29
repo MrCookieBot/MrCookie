@@ -1,4 +1,7 @@
-from config import uri_p
+# env stuff
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
 # database stuff
 import motor.motor_asyncio
@@ -6,6 +9,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 
 client = motor.motor_asyncio.AsyncIOMotorClient()
 
+uri_p = os.getenv("uri_p")
 mongo: AsyncIOMotorClient = AsyncIOMotorClient(uri_p)
 
 db = mongo["mrcookie"]
