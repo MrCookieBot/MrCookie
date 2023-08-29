@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 from cookie_drops.collect_cookie import drop_list_dict
 
-from misc.database import do_update, do_find_one
+from misc.database import do_update, do_find_one, do_find_blacklist_user
 
 # userData dictionary
 
@@ -16,7 +16,7 @@ async def cookie_trigger(message):
         currentUser = message.author
     
         # if the message matches the drop_msg, reward the first user who said it the cookies
-        if message.content == str(drop_list_dict[channel_id]["msg"]):
+        if message.content == str(drop_list_dict[channel_id]["msg"]) and await do_find_blacklist_user({"_id": str(message.author.id)}) == None:
             # check if first user is in database, if not add them
             if await do_find_one({"_id": str(message.guild.id), "users." + str(message.author.id): {"$exists": True}}) == None:
                 await do_update({"_id": str(message.guild.id)}, {'$set': {"users." + str(message.author.id) : {**userData}}})

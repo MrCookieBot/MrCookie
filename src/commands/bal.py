@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 
-from misc.database import do_update, do_find_one
+from misc.database import do_update, do_find_one, do_find_blacklist_user
 
 
 
@@ -55,10 +55,10 @@ async def bal(ctx, user_id = "0"):
             # checking if the user is legit
             if len(str(user_id)) < 17:
                 raise Exception("You sent an invalid user.")
+            
             # check if user is blacklisted
-            #from commands.blacklist import blacklisted_users
-            #if user_id in blacklisted_users:
-                #raise Exception("You can't check the balance of a blacklisted user.")
+            if await do_find_blacklist_user({"_id": str(user_id)}) != None:
+                raise Exception("You can't check the balance of a blacklisted user.")
             
             guild = ctx.bot.get_guild(ctx.guild.id) # find ID by right clicking on server icon and choosing "copy id" at the bottom
             if guild.get_member(user_id) is None:

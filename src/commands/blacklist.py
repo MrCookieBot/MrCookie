@@ -2,25 +2,7 @@ import discord
 from discord.ext import commands
 from commands.say import Admins
 
-# env stuff
-import os
-from dotenv import load_dotenv
-load_dotenv()
-
-file = os.getenv("file")
-
-# load in the current blacklisted users
-
-blacklisted_users = []
-
-openFile = open(file, "r") # open the blacklisted users file
-lines = openFile.readlines() # read the lines
-openFile.close() # close the blacklisted file
-
-for user in lines:
-    user = user.strip("\n")
-    user_int = int(user)
-    blacklisted_users.append(user_int)
+from misc.database import do_find_blacklist_user, do_insert_blacklist_user
 
 
 @commands.command()
@@ -56,16 +38,12 @@ async def blacklist(ctx, user_id = "0"):
             raise Exception("You can't blacklist yourself dude..")
         
         # check if user is already blacklisted
-        if user_id in blacklisted_users:
+        if await do_find_blacklist_user({"_id": str(user_id)}) != None:
             raise Exception("User is already blacklisted.")
-
+        
         # if user_id passes all checks, start the blacklist process -----------
 
-        blacklisted_users.append(int(user_id))
-
-        openFile = open("BlacklistedUsers.txt", "a") # open the blacklisted file
-        openFile.write(str(user_id) + "\n") # add in the new blacklisted user
-        openFile.close() # close the blacklisted file
+        await do_insert_blacklist_user({"_id": str(user_id)})
 
         await ctx.send("Blacklisted " + str(user.mention) + " (" + str(user_id) + ") .")
         

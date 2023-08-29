@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from misc.database import do_update, do_find_one
+from misc.database import do_update, do_find_one, do_find_blacklist_user
 from datetime import datetime, timedelta
 from misc.custom_messages import pass_list, fail_list
 
@@ -31,9 +31,8 @@ async def rob(ctx, user_id = "0"):
                 raise Exception("You sent an invalid user.")
             
             # check if user is blacklisted
-            #from commands.blacklist import blacklisted_users
-            #if user_id in blacklisted_users:
-                #raise Exception("You can't rob a blacklisted user.")
+            if await do_find_blacklist_user({"_id": str(user_id)}) != None:
+                raise Exception("You can't rob a blacklisted user.")
 
             # if user didn't mention someone, find someone random to rob user
             if user_id == 0:

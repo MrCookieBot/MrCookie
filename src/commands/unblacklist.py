@@ -2,12 +2,7 @@ import discord
 from discord.ext import commands
 from commands.say import Admins
 
-# env stuff
-import os
-from dotenv import load_dotenv
-load_dotenv()
-
-file = os.getenv("file")
+from misc.database import do_find_blacklist_user, do_delete_blacklist_user
 
 @commands.command()
 async def unblacklist(ctx, user_id = "0"):
@@ -38,20 +33,14 @@ async def unblacklist(ctx, user_id = "0"):
             user = ctx.bot.get_user(user_id)
         
         # check if user is blacklisted
-        from commands.blacklist import blacklisted_users
-        if user_id not in blacklisted_users:
+        if await do_find_blacklist_user({"_id": str(user_id)}) == None:
             raise Exception("User is not blacklisted.")
 
         # if user_id passes all checks, start the unblacklist process -----------
 
-        blacklisted_users.remove(user_id) # remove the user from the blacklisted_users list
+        #await do_update_blacklist_user({"_id": str(user_id)}, {'$unset'})
+        await do_delete_blacklist_user({"_id": str(user_id)})
 
-        openFile = open(file, "w") # open the blacklisted file
-
-        for user_name in blacklisted_users:
-            openFile.write(str(user_name) + "\n") # remake the file but without the blacklisted user
-
-        openFile.close() # close the blacklisted file
 
         await ctx.send("Unblacklisted " + str(user.mention) + " (" + str(user_id) + ") .")
 

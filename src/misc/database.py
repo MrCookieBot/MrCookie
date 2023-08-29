@@ -35,3 +35,18 @@ async def do_find():
     document = await cursor.to_list(None)
     return document
 
+
+
+
+# search for users from the blacklist database
+async def do_find_blacklist_user(dict):
+    document = await db.blacklist_users.find_one(dict)
+    return(document)
+
+# add user into the blacklist database
+async def do_insert_blacklist_user(dict):
+    await db.blacklist_users.insert_one(dict)
+
+# unblacklist a user
+async def do_delete_blacklist_user(dict):
+    await db.blacklist_users.delete_one(dict)

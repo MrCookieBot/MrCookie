@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from misc.database import do_update, do_find_one
+from misc.database import do_update, do_find_one, do_find_blacklist_user
 
 
 # userData dictionary to put their data in cookieDict
@@ -20,9 +20,8 @@ async def give(ctx, user_id = "<@!0>", amount = "0"):
             raise Exception("You forgot to tag a user and amount to give.")
         
         # check if user is blacklisted
-        #from commands.blacklist import blacklisted_users
-        #if user_id in blacklisted_users:
-            #raise Exception("You can't give cookies to a blacklisted user.")
+        if await do_find_blacklist_user({"_id": str(user_id)}) != None:
+            raise Exception("You can't give cookies to a blacklisted user.")
 
         # check if user is in the guild
         guild = ctx.bot.get_guild(ctx.guild.id)
