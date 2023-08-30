@@ -54,7 +54,7 @@ class MyBot(commands.Bot):
 
 # prefix
 
-bot = MyBot(command_prefix='??', intents=intents)
+bot = MyBot(command_prefix='!!', intents=intents)
 
 
 # on_message
