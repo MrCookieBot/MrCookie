@@ -32,7 +32,7 @@ userData = {"Streaks": 0, "ExpTime": None, "Cookies": 0, "Multiplier": 0, "RobEx
 
 # bal command
 
-@commands.command(aliases = ["balance", "stats"])
+@commands.command(aliases = ["balance"])
 async def bal(ctx, user_id = "0"):
 
     try:
