@@ -122,7 +122,7 @@ async def leaderboard(ctx):
                     mystr += "**#" + str(rank) + "** " + str(user.mention) + "\n" + str(amount) + " Cookies" + "\n" + "\n"
 
                 if index == 10:
-                    embed_leaderboard.add_field(name = "\u200b" + "\n", value = mystr, inline = True)
+                    embed_leaderboard.add_field(name = "", value = mystr, inline = True)
 
             # make sure the embeds send even if we didn't hit 5 or 10 users
             if len(currentlist) < 5:
