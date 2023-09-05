@@ -132,7 +132,7 @@ async def rob(ctx, user_id = "0"):
                 # send the fail embed
                 fail_embed = discord.Embed(
                 title = "Robbery Failed!",
-                description = str(user.mention) + " (" + str(user.display_name) + ") stole ``" + str(total_losses) + "`` of your cookies because " + fail_msg,
+                description = str(user.mention) + " (" + str(user.display_name) + ") was compensated ``" + str(total_losses) + "`` of your cookies because " + fail_msg,
                 color = 0x992d22,
                 )
             
