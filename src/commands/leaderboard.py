@@ -1,20 +1,31 @@
 import discord
 from discord.ext import commands
-from misc.database import do_find_one
+from misc.database import do_find_one, do_find_blacklist_user
 import asyncio
 from datetime import datetime, timedelta
 
 
 # get the rank 
 
-async def position(guild_id, user_id, data):
+async def position(guild_id, user_id, data, guild):
 
     def sorting(values):
         return data["users"][str(values)]["Cookies"]
 
 
     rank = 0
-    cookielist = list(data["users"])
+    cookielist = []
+    raw_cookielist = list(data["users"])
+    
+    for id in raw_cookielist:
+        if await do_find_blacklist_user({"_id": str(id)}) == None: 
+            if guild.get_member(int(id)) != None:
+                cookielist.append(id)
+            else:
+                continue
+        else:
+            continue
+    
     cookielist.sort(reverse = True, key = sorting)
 
     final_list = []
@@ -43,11 +54,13 @@ async def leaderboard(ctx):
 
         # find the position of who made the cmd
         data = await do_find_one({"_id": str(ctx.guild.id), "users": {"$exists": True}})
+        # get the guild
+        guild = ctx.bot.get_guild(ctx.guild.id)
 
         if len(data["users"]) < 1: # if no one is in the database, do not show a leaderboard
             raise Exception("There is no one in the leaderboard, run .daily to create one!")
 
-        final_list = await position(ctx.guild.id, ctx.author.id, data)
+        final_list = await position(ctx.guild.id, ctx.author.id, data, guild)
         pos = final_list[0]
         cookielist = final_list[1]
 
@@ -102,14 +115,14 @@ async def leaderboard(ctx):
                     mystr += "**#" + str(rank) + "** " + str(user.mention) + "\n" + str(amount) + " Cookies" + "\n" + "\n"
 
                 if index == 5:
-                    embed_leaderboard.add_field(name = " ", value = mystr, inline = True)
+                    embed_leaderboard.add_field(name = "", value = mystr, inline = True)
                     mystr = ""
 
                 if index > 5 and rank <= 10:
                     mystr += "**#" + str(rank) + "** " + str(user.mention) + "\n" + str(amount) + " Cookies" + "\n" + "\n"
 
                 if index == 10:
-                    embed_leaderboard.add_field(name = "\n", value = mystr, inline = True)
+                    embed_leaderboard.add_field(name = "\u200b" + "\n", value = mystr, inline = True)
 
             # make sure the embeds send even if we didn't hit 5 or 10 users
             if len(currentlist) < 5:
