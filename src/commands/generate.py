@@ -13,8 +13,7 @@ async def generate(ctx, user_id = "<@!0>", amount = "0"):
     try:
         # make sure only users with manage_server can run the command or bot admins
         if ctx.author.id not in Admins:
-            if not ctx.author.guild_permissions.manage_guild:
-                raise Exception("You don't have permission to run this command.")
+            raise Exception("You don't have permission to run this command.")
         
         # fix up the user_id and amount
 
