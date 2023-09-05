@@ -33,6 +33,7 @@ class MyBot(commands.Bot):
         await self.load_extension("commands.info")
         await self.load_extension("commands.invite")
         await self.load_extension("commands.rob")
+        await self.load_extension("commands.stats")
         await self.load_extension("commands.blacklist")
         await self.load_extension("commands.unblacklist")
         bot.remove_command('help') # remove the default help command
