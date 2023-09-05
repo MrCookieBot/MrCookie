@@ -13,10 +13,11 @@ async def cookie_trigger(message):
     try:
         channel =  message.channel
         channel_id = message.channel.id
-        currentUser = message.author
+        triggered = False
     
         # if the message matches the drop_msg, reward the first user who said it the cookies
-        if message.content == str(drop_list_dict[channel_id]["msg"]) and await do_find_blacklist_user({"_id": str(message.author.id)}) == None:
+        if message.content == str(drop_list_dict[channel_id]["msg"]) and await do_find_blacklist_user({"_id": str(message.author.id)}) == None and triggered == False:
+            triggered = True
             # check if first user is in database, if not add them
             if await do_find_one({"_id": str(message.guild.id), "users." + str(message.author.id): {"$exists": True}}) == None:
                 await do_update({"_id": str(message.guild.id)}, {'$set': {"users." + str(message.author.id) : {**userData}}})
