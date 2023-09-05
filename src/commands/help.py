@@ -20,17 +20,19 @@ async def help(ctx):
         "``.invite`` ➙ Invite MrCookie to your server. ", inline = False)
     
         help_embed.add_field(name = "Your Cookies", value = "``.daily`` ➙ Collect free cookies once everyday, amount increases based on streak." + "\n" + 
-        "``.rob (userID)`` ➙ Try to steal another user's cookies, but you may not succeed." + "\n" +
+        "``.rob (user)`` ➙ Try to steal another user's cookies, but you may not succeed." + "\n" +
         "``.eat`` ➙ Eat one cookie cause you're hungry." + "\n" +
-        "``.give (userID) (amount)`` ➙ [Aliases: transfer, gift] Give another user some of your cookies.", inline = False)
+        "``.give (user) (amount)`` ➙ [Aliases: transfer, gift] Give another user some of your cookies.", inline = False)
     
         help_embed.add_field(name = "Cookie Stats", value = "``.leaderboard`` ➙ [Aliases: lb] View who has the highest cookies in this server." + "\n" +
-        "``.bal (optional: userID)`` ➙ [Aliases: balance, stats] View your or another user's cookie balance.", inline = False)
+        "``.stats (optional: user)`` ➙ View complete statistics of a user." + "\n" +
+        "``.bal (optional: user)`` ➙ [Aliases: balance] View your or another user's cookie balance.", inline = False)
+       
 
         help_embed.add_field(name = "Admin Commands", value = "``.say (optional: channelID) (message)`` ➙ Have the bot post your message." + "\n" +
-        "``.generate (userID) (amount)`` ➙ [Aliases: gen] Add or remove cookies from a user in this server.", inline = False)
+        "``.generate (user) (amount)`` ➙ [Aliases: gen] Add or remove cookies from a user in this server.", inline = False)
 
-        help_embed.set_footer(text = "Need help? Join our support server at discord.gg/QQTC3ABV9U")
+        help_embed.set_footer(text = "Need help? Join our HQ server at discord.gg/QQTC3ABV9U")
             
         await ctx.send(embed=help_embed)
     
