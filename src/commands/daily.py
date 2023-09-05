@@ -36,7 +36,7 @@ async def daily(ctx):
                 # figure out weekly bonus
                 data = (await do_find_one({"_id": str(ctx.guild.id), "users." + str(ctx.author.id): {"$exists": True}})) # refresh the data dict with new database data
                 weekly_reward = 0 # the beginner weekly_reward if user does not reach 10 streaks
-                if int(data["users"][str(ctx.author.id)]["Streaks"]) % 10 == 0:  ## meaning they just hit a streak 10,20,30,40, etc
+                if int(data["users"][str(ctx.author.id)]["Streaks"]) % 7 == 0: 
                     weekly_multiplier = int(data["users"][str(ctx.author.id)]["Streaks"]) // 1 # find out their 10 day bonus
                     if weekly_multiplier > 60:
                         weekly_reward = 60
@@ -44,9 +44,9 @@ async def daily(ctx):
                         weekly_reward = weekly_multiplier
                 
                 # figure out their daily bonus
-                if int(data["users"][str(ctx.author.id)]["Streaks"]) // 14 == 0: # check if user hit another 14th multiple streak
+                if int(data["users"][str(ctx.author.id)]["Streaks"]) % 14 == 0: # check if user hit another 14th multiple streak
                     if int(data["users"][str(ctx.author.id)]["Multiplier"]) < 50: # check if user hit 50 multiplier yet
-                        new_multiplier = int(data["users"][str(ctx.author.id)]["Multiplier"]) + 5
+                        new_multiplier = int(data["users"][str(ctx.author.id)]["Multiplier"]) + 2
                         await do_update({"_id": str(ctx.guild.id)}, {'$set': {"users." + str(ctx.author.id) + "." + "Multiplier": new_multiplier}}) # if not, add 5
                 if int(data["users"][str(ctx.author.id)]["Streaks"]) == 1: # if streak reset, reset multiplier as well
                     new_multiplier = 0
@@ -74,7 +74,7 @@ async def daily(ctx):
                     )
 
                 embed.set_author(name = "Daily Cookies - " + str(ctx.author.name), icon_url = ctx.author.display_avatar)
-                embed.set_footer(text = "You can collect again in 24 hours.")
+                embed.set_footer(text = "You can collect again in 23 hours.")
 
                 if int(data["users"][str(ctx.author.id)]["Streaks"]) % 10 == 0: # bonus cookies every 10 day message
                     embed.add_field(name = "🍪 Bonus Cookies!", value = "For reaching a streak of **" + str(data["users"][str(ctx.author.id)]["Streaks"]) + "**, you receieved **" + str(weekly_multiplier) + "** extra cookies.", inline = True)
@@ -109,7 +109,7 @@ async def daily(ctx):
                 )
 
             embed.set_author(name = "Daily Cookies - " + str(ctx.author.name), icon_url = ctx.author.display_avatar)
-            embed.set_footer(text = "You can collect again in 24 hours.")
+            embed.set_footer(text = "You can collect again in 23 hours.")
             
             await ctx.send(embed=embed)
     
