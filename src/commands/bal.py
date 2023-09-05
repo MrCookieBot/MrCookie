@@ -7,12 +7,23 @@ from misc.database import do_update, do_find_one, do_find_blacklist_user
 
 # get the rank 
 
-def position(author_id, data):
+async def position(author_id, data, guild):
     def sorting(values):
         return data["users"][str(values)]["Cookies"]
 
     rank = 0
-    cookielist = list(data["users"])
+    cookielist = []
+    raw_cookielist = list(data["users"])
+    
+    for id in raw_cookielist:
+        if await do_find_blacklist_user({"_id": str(id)}) == None: 
+            if guild.get_member(int(id)) != None:
+                cookielist.append(int(id))
+            else:
+                continue
+        else:
+            continue
+    
     cookielist.sort(reverse = True, key = sorting)
   
 
@@ -78,7 +89,8 @@ async def bal(ctx, user_id = "0"):
         # get the user's rank
         data = (await do_find_one({"_id": str(ctx.guild.id), "users." + str(user_id): {"$exists": True}})) # refresh the data dict with new database data
 
-        user_rank = position(user_id, data)
+        guild = ctx.bot.get_guild(ctx.guild.id)
+        user_rank = await position(user_id, data, guild)
 
 
         # send the embed

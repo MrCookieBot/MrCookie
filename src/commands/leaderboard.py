@@ -20,7 +20,7 @@ async def position(guild_id, user_id, data, guild):
     for id in raw_cookielist:
         if await do_find_blacklist_user({"_id": str(id)}) == None: 
             if guild.get_member(int(id)) != None:
-                cookielist.append(id)
+                cookielist.append(int(id))
             else:
                 continue
         else:

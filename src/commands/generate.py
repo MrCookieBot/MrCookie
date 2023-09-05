@@ -52,13 +52,13 @@ async def generate(ctx, user_id = "<@!0>", amount = "0"):
             await do_update({"_id": str(ctx.guild.id)}, {'$set': {"users." + str(user_id) : {**userData}}})
 
         # generate the cookies if no errors have been raised
-        data = (await do_find_one({"_id": str(ctx.guild.id), "users." + str(ctx.author.id): {"$exists": True}})) # refresh the data dict with new database data
+        data = await do_find_one({"_id": str(ctx.guild.id), "users." + str(user_id): {"$exists": True}}) # refresh the data dict with new database data
 
         if int(data["users"][str(user_id)]["Cookies"]) + amount < 0: # no letting the user go in negative cookies
             raise Exception("You can't put the user in negative cookies.")
         else:
             new_cookies = int(data["users"][str(user_id)]["Cookies"]) + amount
-            await do_update({"_id": str(ctx.guild.id)}, {'$set': {"users." + str(ctx.author.id) + "." + "Cookies": new_cookies}})
+            await do_update({"_id": str(ctx.guild.id)}, {'$set': {"users." + str(user_id) + "." + "Cookies": new_cookies}})
 
         # get user information to tag them, try get_user and if that fails then fetch_user
         if ctx.bot.get_user(user_id) == None:
