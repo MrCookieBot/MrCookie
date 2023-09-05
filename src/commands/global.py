@@ -1,13 +1,13 @@
 import discord
 from discord.ext import commands
-from misc.database import do_find_one, do_find_blacklist_user
+from misc.database import do_find, do_find_blacklist_user
 import asyncio
 from datetime import datetime, timedelta
 
 
 # get the rank 
 
-async def position(guild_id, user_id, data, guild):
+async def position(user_id, global_dict):
 
     def sorting(values):
         return data["users"][str(values)]["Cookies"]
@@ -15,14 +15,11 @@ async def position(guild_id, user_id, data, guild):
 
     rank = 0
     cookielist = []
-    raw_cookielist = list(data["users"])
+    raw_cookielist = list(global_dict.keys())
     
     for id in raw_cookielist:
         if await do_find_blacklist_user({"_id": str(id)}) == None: 
-            if guild.get_member(int(id)) != None:
-                cookielist.append(int(id))
-            else:
-                continue
+            cookielist.append(int(id))
         else:
             continue
     
@@ -33,7 +30,7 @@ async def position(guild_id, user_id, data, guild):
 
 
     for key in cookielist:
-        if await do_find_one({"_id": str(guild_id), "users." + str(user_id): {"$exists": True}}) == None:
+        if key not in global_dict:
             final_list.append("None")
             final_list.append(cookielist)
             break
@@ -46,22 +43,34 @@ async def position(guild_id, user_id, data, guild):
     return final_list
 
 
-@commands.command(aliases = ["lb"])
+@commands.command()
 @commands.cooldown(1, 45, commands.BucketType.member)
-async def leaderboard(ctx):
+async def lbglobal(ctx):
 
     try:
+        global_dict = {}
 
-        # get the data
-        data = await do_find_one({"_id": str(ctx.guild.id), "users": {"$exists": True}})
-        # get the guild
-        guild = ctx.bot.get_guild(ctx.guild.id)
+        global_cookies = 0
+        data = await do_find() # get the data from database
 
-        if len(data["users"]) < 1: # if no one is in the database, do not show a leaderboard
-            raise Exception("There is no one in the leaderboard, run .daily to create one!")
+        for user in data:
+            global_cookies = 0
+            # check if user is already in the global dictionary
+            if user in global_dict:
+                continue
+            else:
+                # if not, add up their total cookies and add them
+                for guild_dict in data: # add up all the user's cookies
+                    if str(user) in guild_dict["users"]:
+                        global_cookies += guild_dict["users"][str(ctx.author.id)]["Cookies"]
+                    else:
+                        continue
+                global_dict[user] = global_cookies
 
-        # get the rank of the user who ran the command, call the position method
-        final_list = await position(ctx.guild.id, ctx.author.id, data, guild)
+
+
+        # get the position of the user who ran the command
+        final_list = await position(ctx.author.id, global_dict)
         pos = final_list[0]
         cookielist = final_list[1]
 
@@ -191,4 +200,4 @@ async def on_command_error(ctx,  error):
 # connecting to main file
 
 async def setup(bot):
-    bot.add_command(leaderboard)
+    bot.add_command(lbglobal)

@@ -108,7 +108,7 @@ async def stats(ctx, user_id = "0"):
         global_cookies = 0
         data = await do_find() # get the data from database
 
-        for guild_dict in data: # add up all the users
+        for guild_dict in data: # add up all the user's cookies
             if str(ctx.author.id) in guild_dict["users"]:
                 global_cookies += guild_dict["users"][str(ctx.author.id)]["Cookies"]
             else:
