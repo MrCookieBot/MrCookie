@@ -23,14 +23,18 @@ async def position(author_id, data, guild):
                 continue
         else:
             continue
+
     
+    # sort the list
     cookielist.sort(reverse = True, key = sorting)
   
-
-    for key in cookielist:
-        if int(key) == author_id:
-            rank = cookielist.index(key) + 1
-            break
+    if int(author_id) not in cookielist:
+        rank = "None"
+    else:
+        for key in cookielist:
+            if int(key) == author_id:
+                rank = cookielist.index(key) + 1
+                break
     
     return rank
 
@@ -60,7 +64,6 @@ async def bal(ctx, user_id = "0"):
             user = ctx.author
             # check if the user is in the database, if not add them
             if await do_find_one({"_id": str(ctx.guild.id), "users." + str(user_id): {"$exists": True}}) == None:
-                print("I was not supposed to run")
                 await do_update({"_id": str(ctx.guild.id)}, {'$set': {"users." + str(user_id) : {**userData}}})
         else:
             # checking if the user is legit
@@ -87,7 +90,7 @@ async def bal(ctx, user_id = "0"):
 
 
         # get the user's rank
-        data = (await do_find_one({"_id": str(ctx.guild.id), "users." + str(user_id): {"$exists": True}})) # refresh the data dict with new database data
+        data = await do_find_one({"_id": str(ctx.guild.id), "users." + str(user_id): {"$exists": True}}) # refresh the data dict with new database data
 
         guild = ctx.bot.get_guild(ctx.guild.id)
         user_rank = await position(user_id, data, guild)

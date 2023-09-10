@@ -29,19 +29,16 @@ async def position(guild_id, user_id, data, guild):
     cookielist.sort(reverse = True, key = sorting)
 
     final_list = []
-    rank = 0
 
-
-    for key in cookielist:
-        if await do_find_one({"_id": str(guild_id), "users." + str(user_id): {"$exists": True}}) == None:
-            final_list.append("None")
-            final_list.append(cookielist)
-            break
-        if int(key) == user_id:
-            rank = cookielist.index(key) + 1
-            final_list.append(rank)
-            final_list.append(cookielist)
-            break
+    if int(user_id) not in cookielist:
+        final_list.append("None")
+        final_list.append(cookielist)
+    else:
+        for key in cookielist:
+            if int(key) == user_id:
+                final_list.append(cookielist.index(key) + 1)
+                final_list.append(cookielist)
+                break
 
     return final_list
 
