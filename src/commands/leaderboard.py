@@ -1,28 +1,25 @@
 import discord
 from discord.ext import commands
-from misc.database import do_find_one, do_find_blacklist_user
+from misc.database import do_find_one, do_find_blacklist
 import asyncio
 from datetime import datetime, timedelta
 
 
 # get the rank 
 
-async def position(guild_id, user_id, data, guild):
+async def position(user_id, data, blacklist_data, guild):
 
     def sorting(values):
         return data["users"][str(values)]["Cookies"]
 
 
-    rank = 0
     cookielist = []
     raw_cookielist = list(data["users"])
     
     for id in raw_cookielist:
-        if await do_find_blacklist_user({"_id": str(id)}) == None: 
-            if guild.get_member(int(id)) != None:
-                cookielist.append(int(id))
-            else:
-                continue
+        # proceed if user is not blacklisted, and in guild, and has more than 0 cookies                
+        if str(id) not in blacklist_data and  guild.get_member(int(id)) != None and int(data["users"][str(id)]["Cookies"]) > 0:
+            cookielist.append(int(id))
         else:
             continue
     
@@ -30,15 +27,13 @@ async def position(guild_id, user_id, data, guild):
 
     final_list = []
 
+    # get the user's rank
     if int(user_id) not in cookielist:
         final_list.append("None")
         final_list.append(cookielist)
     else:
-        for key in cookielist:
-            if int(key) == user_id:
-                final_list.append(cookielist.index(key) + 1)
-                final_list.append(cookielist)
-                break
+        final_list.append(cookielist.index(user_id) + 1)
+        final_list.append(cookielist)
 
     return final_list
 
@@ -53,12 +48,14 @@ async def leaderboard(ctx):
         data = await do_find_one({"_id": str(ctx.guild.id), "users": {"$exists": True}})
         # get the guild
         guild = ctx.bot.get_guild(ctx.guild.id)
+        # get the blacklisted users list
+        blacklist_data = await do_find_blacklist()
 
         if len(data["users"]) < 1: # if no one is in the database, do not show a leaderboard
             raise Exception("There is no one in the leaderboard, run .daily to create one!")
 
         # get the rank of the user who ran the command, call the position method
-        final_list = await position(ctx.guild.id, ctx.author.id, data, guild)
+        final_list = await position(ctx.author.id, data, blacklist_data, guild)
         pos = final_list[0]
         cookielist = final_list[1]
 
@@ -109,7 +106,7 @@ async def leaderboard(ctx):
 
 
                 # building the lines in an embed
-                mystr += "**#" + str(rank) + "** " + str(user.mention) + "\n" + str(amount) + " Cookies" + "\n" + "\n"
+                mystr += "**#" + str(rank) + ". " + str(user.display_name) + "** " + "\n" + str(amount) + " Cookies" + "\n" + "\n"
 
                 if index == 5 or index == 10:
                     embed_leaderboard.add_field(name = "", value = mystr, inline = True)
