@@ -1,11 +1,11 @@
 import discord
 from discord.ext import commands
 
-from misc.database import do_update, do_find_one, do_find_blacklist_user, do_find
+from misc.database import do_update, do_find_one, do_find_blacklist_user, do_find, do_find_blacklist
 
 # get the rank 
 
-async def position(author_id, data, guild):
+async def position(author_id, data, blacklist_data, guild):
     def sorting(values):
         return data["users"][str(values)]["Cookies"]
 
@@ -14,21 +14,22 @@ async def position(author_id, data, guild):
     raw_cookielist = list(data["users"])
     
     for id in raw_cookielist:
-        if await do_find_blacklist_user({"_id": str(id)}) == None: 
-            if guild.get_member(int(id)) != None:
-                cookielist.append(int(id))
-            else:
-                continue
+        # proceed if user is not blacklisted, and in guild, and has more than 0 cookies
+        if str(id) not in blacklist_data and guild.get_member(int(id)) != None and int(data["users"][str(id)]["Cookies"]) > 0:
+            cookielist.append(int(id))
         else:
             continue
+
     
+    # sort the list
     cookielist.sort(reverse = True, key = sorting)
   
+    # get the user's rank
+    if int(author_id) not in cookielist:
+        rank = "None"
+    else:
+        rank = cookielist.index(author_id) + 1
 
-    for key in cookielist:
-        if int(key) == author_id:
-            rank = cookielist.index(key) + 1
-            break
     
     return rank
 
@@ -88,9 +89,11 @@ async def stats(ctx, user_id = "0"):
 
         # get the user's rank
         data = (await do_find_one({"_id": str(ctx.guild.id), "users." + str(user_id): {"$exists": True}})) # refresh the data dict with new database data
+        # get blacklisted users
+        blacklist_data = await do_find_blacklist()
 
         guild = ctx.bot.get_guild(ctx.guild.id)
-        user_rank = await position(user_id, data, guild)
+        user_rank = await position(user_id, data, blacklist_data, guild)
 
 
         # send the embed
