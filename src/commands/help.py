@@ -29,10 +29,9 @@ async def help(ctx):
         "``.bal (optional: user)`` ➙ [Aliases: balance] View your or another user's cookie balance.", inline = False)
        
 
-        help_embed.add_field(name = "Admin Commands", value = "``.say (optional: channelID) (message)`` ➙ Have the bot post your message." + "\n" +
-        "``.generate (user) (amount)`` ➙ [Aliases: gen] Add or remove cookies from a user in this server.", inline = False)
+        help_embed.add_field(name = "Admin Commands", value = "``.say (optional: channelID) (message)`` ➙ Have the bot post your message.", inline = False)
 
-        help_embed.set_footer(text = "Need help? Join our HQ server at discord.gg/QQTC3ABV9U")
+        help_embed.set_footer(text = "Need help? Join our server at discord.gg/QQTC3ABV9U")
             
         await ctx.send(embed=help_embed)
     
