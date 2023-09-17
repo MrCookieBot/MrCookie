@@ -45,4 +45,4 @@ async def cookie_trigger(message):
         return
     
     except Exception as Error:
-        await channel.send(Error)
+        print(Error)
