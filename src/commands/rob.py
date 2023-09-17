@@ -17,6 +17,8 @@ async def rob(ctx, user_id = "0"):
         
         # make sure their rob cooldown is over
         data = (await do_find_one({"_id": str(ctx.guild.id), "users." + str(ctx.author.id): {"$exists": True}})) # refresh the data dict with new database data
+        guild = ctx.bot.get_guild(ctx.guild.id)
+
 
         if data["users"][str(ctx.author.id)]["RobExp"] == None or datetime.now() > data["users"][str(ctx.author.id)]["RobExp"]:
             # check if the sender has enough cookies to rob
@@ -40,15 +42,15 @@ async def rob(ctx, user_id = "0"):
                     raise Exception("More than 2 people need at least 15 cookies to rob.")
                 
                 rob_list = []
-                for person in data["users"]: # create a list of every user in the server who has over 15 cookies
-                    if int(data["users"][str(person)]["Cookies"]) < 15:
-                        continue
-                    if ctx.author.id == int(person): # make sure the sender themself isn't added to the list
+                # create a list of every user in the server
+                for person in data["users"]:
+                    # do not add user to list if they have less than 15 cookies, if it's themself, or if they're not in the guild
+                    if int(data["users"][str(person)]["Cookies"]) < 15 or ctx.author.id == int(person) or guild.get_member(int(person)) is None:
                         continue
                     else:
                         rob_list.append(int(person))
                 random_user = random.choice(range(0, len(rob_list)))
-                user_id = rob_list[random_user]
+                user_id = int(rob_list[random_user])
 
             # if user did mention someone, verify that user is real
             else:
@@ -60,7 +62,6 @@ async def rob(ctx, user_id = "0"):
                     raise Exception("You can't rob yourself, silly!")
             
                 # check if user is in the guild
-                guild = ctx.bot.get_guild(ctx.guild.id)
                 if guild.get_member(user_id) is None:
                     raise Exception("User is not in the guild.")
                 
@@ -88,7 +89,7 @@ async def rob(ctx, user_id = "0"):
                 pass_msg_chance = random.choice(range(0, len(pass_list))) # randomly pick which msg to use
                 pass_msg = pass_list[pass_msg_chance]
 
-                if int(data["users"][str(user_id)]["Cookies"]) <= 100: # if below 100 cookies, steal 1-10
+                if int(data["users"][str(user_id)]["Cookies"]) <= 100: # if below 100 cookies, steal 1-5
                     lost_cookies = random.choice(range(0, 6))
                 if int(data["users"][str(user_id)]["Cookies"]) > 100 and int(data["users"][str(user_id)]["Cookies"]) <= 1500: # if below 1,500 cookies, steal 0.8%
                     lost_cookies = int(0.008 * int(data["users"][str(user_id)]["Cookies"]))
@@ -123,16 +124,24 @@ async def rob(ctx, user_id = "0"):
                 extra_losses = random.choice(range(5, 11)) # add an extra 5-10
                 total_losses = lost_cookies + extra_losses # add it all up
 
+                # remove cookies from robber
                 new_cookies = int(data["users"][str(ctx.author.id)]["Cookies"]) - total_losses
                 await do_update({"_id": str(ctx.guild.id)}, {'$set': {"users." + str(ctx.author.id) + "." + "Cookies": new_cookies}})
 
-                new_cookies2 = int(data["users"][str(user_id)]["Cookies"]) + total_losses
-                await do_update({"_id": str(ctx.guild.id)}, {'$set': {"users." + str(user_id) + "." + "Cookies": new_cookies2}})
+                # 20% chance of giving those lost cookies to the person who robber tried to rob
+                give_robber = random.choice(range(0, 11))
+                if give_robber <= 2:
+                    new_cookies2 = int(data["users"][str(user_id)]["Cookies"]) + total_losses
+                    await do_update({"_id": str(ctx.guild.id)}, {'$set': {"users." + str(user_id) + "." + "Cookies": new_cookies2}})
+                    MyString = "Failed to rob " + str(user.mention) + " (" + str(user.display_name) + ") and lost ``" + str(total_losses) + "`` cookies because "
+                # 80% chance of not giving another person your lost cookies 
+                if give_robber > 2:
+                    MyString = "Unlucky! " + str(user.mention) + " (" + str(user.display_name) + ") was gifteed ``" + str(total_losses) + "`` of your cookies because "
 
                 # send the fail embed
                 fail_embed = discord.Embed(
                 title = "Robbery Failed!",
-                description = str(user.mention) + " (" + str(user.display_name) + ") was compensated ``" + str(total_losses) + "`` of your cookies because " + fail_msg,
+                description = MyString + fail_msg,
                 color = 0x992d22,
                 )
             
