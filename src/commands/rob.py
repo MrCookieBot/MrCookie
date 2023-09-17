@@ -91,10 +91,10 @@ async def rob(ctx, user_id = "0"):
 
                 if int(data["users"][str(user_id)]["Cookies"]) <= 100: # if below 100 cookies, steal 1-5
                     lost_cookies = random.choice(range(0, 6))
-                if int(data["users"][str(user_id)]["Cookies"]) > 100 and int(data["users"][str(user_id)]["Cookies"]) <= 1500: # if below 1,500 cookies, steal 0.8%
-                    lost_cookies = int(0.008 * int(data["users"][str(user_id)]["Cookies"]))
-                if int(data["users"][str(user_id)]["Cookies"]) > 1500: # if above 1,500 cookies, steal 0.16%
+                if int(data["users"][str(user_id)]["Cookies"]) > 100 and int(data["users"][str(user_id)]["Cookies"]) <= 1500: # if between 100 and 1,500 cookies, steal 0.16%
                     lost_cookies = int(0.0016 * int(data["users"][str(user_id)]["Cookies"]))
+                if int(data["users"][str(user_id)]["Cookies"]) > 1500: # if above 1,500 cookies, steal 0.8%
+                    lost_cookies = int(0.008 * int(data["users"][str(user_id)]["Cookies"]))
 
                 extra_losses = random.choice(range(5, 11)) # take an extra 5-10 cookies randomly
                 total_losses = lost_cookies + extra_losses # add all the losses up
