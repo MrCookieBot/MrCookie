@@ -53,7 +53,7 @@ async def info(ctx):
 
         info_embed.add_field(name = "━━━━━━━━━━━━━" + "\n" "Creator", value = "dr.john", inline = True)
         info_embed.add_field(name = "━━━━━━━━━━━━━" + "\n" "Twitter", value = "[@DrJohn_](https://twitter.com/DrJohn_)", inline = True)
-        info_embed.add_field(name = "━━━━━━━━━━━━━" + "\n" "Support", value = "[MrCookie HQ](https://discord.gg/QQTC3ABV9U)", inline = True)
+        info_embed.add_field(name = "━━━━━━━━━━━━━" + "\n" "Server", value = "[MrCookie](https://discord.gg/QQTC3ABV9U)", inline = True)
 
         await ctx.send(embed=info_embed)
 
