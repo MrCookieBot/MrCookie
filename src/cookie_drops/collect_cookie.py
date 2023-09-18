@@ -68,7 +68,7 @@ async def collect_cookie(message):
                 drop_msg = drop_list[drop_msg_chance]
 
                 # pick random cookie amount
-                cookie_amount = random.choice(range(1, 21))
+                cookie_amount = random.choice(range(1, 16))
 
 
 
