@@ -136,7 +136,7 @@ async def rob(ctx, user_id = "0"):
                     MyString = "Failed to rob " + str(user.mention) + " (" + str(user.display_name) + ") and lost ``" + str(total_losses) + "`` cookies because "
                 # 80% chance of not giving another person your lost cookies 
                 if give_robber > 2:
-                    MyString = "Unlucky! " + str(user.mention) + " (" + str(user.display_name) + ") was gifteed ``" + str(total_losses) + "`` of your cookies because "
+                    MyString = "Unlucky! " + str(user.mention) + " (" + str(user.display_name) + ") was gifted ``" + str(total_losses) + "`` of your cookies because "
 
                 # send the fail embed
                 fail_embed = discord.Embed(
