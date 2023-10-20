@@ -60,8 +60,7 @@ async def stats(ctx, user_id = "0"):
             user_id = ctx.author.id
             user = ctx.author
             # check if the user is in the database, if not add them
-            if await do_find_one({"_id": str(ctx.guild.id), "users." + str(user_id): {"$exists": True}}) == None:
-                print("I was not supposed to run")
+            if await do_find_one({"_id": str(ctx.guild.id), "users." + str(ctx.author.id): {"$exists": True}}) == None:
                 await do_update({"_id": str(ctx.guild.id)}, {'$set': {"users." + str(user_id) : {**userData}}})
         else:
             # checking if the user is legit
@@ -88,7 +87,7 @@ async def stats(ctx, user_id = "0"):
 
 
         # get the user's rank
-        data = (await do_find_one({"_id": str(ctx.guild.id), "users." + str(user_id): {"$exists": True}})) # refresh the data dict with new database data
+        data = await do_find_one({"_id": str(ctx.guild.id), "users." + str(user_id): {"$exists": True}}) # refresh the data dict with new database data
         # get blacklisted users
         blacklist_data = await do_find_blacklist()
 
@@ -106,17 +105,6 @@ async def stats(ctx, user_id = "0"):
         embed.add_field(name = "Rank", value = "#" + str(user_rank), inline = True)
         embed.add_field(name = "Cookies", value = str(data["users"][str(user_id)]["Cookies"]), inline = True)
         embed.add_field(name = "Streaks", value = str(data["users"][str(user_id)]["Streaks"]), inline = True)
-
-
-        global_cookies = 0
-        data = await do_find() # get the data from database
-
-        for guild_dict in data: # add up all the user's cookies
-            if str(ctx.author.id) in guild_dict["users"]:
-                global_cookies += guild_dict["users"][str(ctx.author.id)]["Cookies"]
-            else:
-                continue
-        embed.add_field(name = "Global Cookies", value = global_cookies, inline = True)
         
 
 
