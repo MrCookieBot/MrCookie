@@ -60,7 +60,7 @@ bot = MyBot(command_prefix='.', intents=intents)
 async def on_message(message):
     if not message.author.bot: # check to make sure the author isn't a bot
         if await do_find_blacklist_user({"_id": str(message.author.id)}) == None: # check to make sure the author isn't blacklisted
-            await collect_cookie(message)
+            ## await collect_cookie(message)
             await bot.process_commands(message)
 
 
