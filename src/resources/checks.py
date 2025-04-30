@@ -41,7 +41,7 @@ async def lookup_database(userID, guildID):
 
 
 async def new_database(userID, guildID):
-    newUser = {"Cookies": 0, "Streaks": 0, "DailyExpire": datetime.now() - timedelta(hours = 24), "RobExpire": datetime.now() - timedelta(hours = 24), "DailyMultiplier": 0, "RobChances": 7, "DailyMultExpire": datetime.now(), "RobExpire": datetime.now()}
+    newUser = {"Cookies": 0, "Streaks": 0, "DailyExpire": datetime.now() - timedelta(hours = 24), "RobExpire": datetime.now() - timedelta(hours = 24), "DailyMultiplier": 0, "RobChances": 7, "DailyMultExpire": datetime.now(), "RobExpire": datetime.now(), "Inventory": "Empty"}
     await bot.db.update_user({"_id": str(guildID)}, {'$set': {"users." + str(userID) : {**newUser}}})
 
 
