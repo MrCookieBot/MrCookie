@@ -9,6 +9,8 @@ async def daily(ctx):
     try:
         userID = str(ctx.author.id)
         guildID = ctx.guild.id
+        guild = ctx.bot.get_guild(guildID)
+        user = guild.get_member(int(userID)) or await guild.fetch_member(int(userID))
 
         ## this block fetches user data from the database
         userData = await lookup_database(userID, guildID) 
@@ -16,8 +18,8 @@ async def daily(ctx):
             await new_database(userID, guildID)
             userData = await lookup_database(userID, guildID)
 
-        ## this if block checks if they have a cooldown
-        if datetime.now() < userData["users"][userID]["DailyExpire"] + timedelta(hours = 23): 
+        ## this checks if they have a cooldown
+        if datetime.now() < userData["users"][userID]["DailyExpire"]:
             timer = int(userData["users"][userID]["DailyExpire"].timestamp())
 
             cooldown_embed = discord.Embed(
@@ -25,7 +27,7 @@ async def daily(ctx):
                 color = 0x992d22,
                 timestamp = userData["users"][userID]["DailyExpire"]
                 )
-            cooldown_embed.set_author(name = "Not yet " + str(ctx.author.name) + "!", icon_url = ctx.author.display_avatar)
+            cooldown_embed.set_author(name = "Not yet " + str(user.display_name) + "!", icon_url = user.display_avatar)
             await ctx.send(embed=cooldown_embed)
             return
         
@@ -42,7 +44,7 @@ async def daily(ctx):
         userData["users"][userID]["Cookies"] += TotalCookies
 
         ## this block updates their streak and daily cooldown
-        if datetime.now() > userData["users"][userID]["DailyExpire"] + timedelta(hours = 24): 
+        if datetime.now() > userData["users"][userID]["DailyExpire"] + timedelta(hours = 24): ## reset cooldown if 24 hours past expiration
             userData["users"][userID]["Streaks"] = 1
         else:
             userData["users"][userID]["Streaks"] += 1
@@ -54,10 +56,10 @@ async def daily(ctx):
             description = "You have collected your daily ``" + str(TotalCookies) + "`` cookies!" + "\n" + 
             "You now have a streak of ``" + str(userData["users"][userID]["Streaks"]) + "``.", 
             color = 0x2ecc71,
-            timestamp = userData["users"][str(ctx.author.id)]["DailyExpire"]
+            timestamp = userData["users"][userID]["DailyExpire"]
             )
 
-        dailyembed.set_author(name = "Daily Cookies - " + str(ctx.author.name), icon_url = ctx.author.display_avatar)
+        dailyembed.set_author(name = "Daily Cookies - " + str(user.display_name), icon_url = user.display_avatar)
         dailyembed.set_footer(text = "You can collect again in 23 hours.")
         await ctx.send(embed=dailyembed)
 
