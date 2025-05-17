@@ -23,7 +23,7 @@ intents.members = True
 async def main():
 
     bot = MrCookie(
-        command_prefix = '.',
+        command_prefix = ',',
         mongodb_url = os.getenv("uri_p"),
         intents=intents,
     )
