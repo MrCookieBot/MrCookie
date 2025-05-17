@@ -32,10 +32,6 @@ async def generate(ctx, user_id = "<@!0>", amount = "0"):
         # check if user is blacklisted
         if await do_find_blacklist_user({"_id": str(user_id)}) != None:
             raise Exception("You can't generate cookies to a blacklisted user.")
-
-        # check the amount
-        if amount > 1000: # generate limit
-            raise Exception("You can't generate more than 1,000 cookies at a time.")
         
         if amount == 0.0:
             raise Exception("You forgot to include an amount to give.")
