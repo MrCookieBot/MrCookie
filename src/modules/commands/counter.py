@@ -16,7 +16,7 @@ async def setcounter(ctx):
 
 @bot.listen()
 async def on_message(message):
-    if message.isdigit():
+    if message.content.isdigit():
         counterData = await lookup_counter(message.guild.id)
         if message.channel.id == counterData["settings"]["counter"]["Channel"]:
             if message == counterData["settings"]["counter"]["Counter"] + 1:
