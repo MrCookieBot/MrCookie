@@ -28,7 +28,7 @@ async def main():
         intents=intents,
     )
 
-    MODULES = ["modules/commands", "modules/events"]
+    MODULES = ["modules/commands", "modules/events", "modules/commands/drops"]
 
     ## loop through all the files under the commands folder, that's how we check for commands
     for directory in MODULES:
