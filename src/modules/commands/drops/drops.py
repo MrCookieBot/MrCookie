@@ -39,10 +39,7 @@ async def process_trigger(channel_id: str):
     # lock as soon as possible
     channel_lock.add(channel_id)
 
-    prompt = random.choice(list(user_prompts.keys()))
-    answer = user_prompts[prompt]
-
-    ch_prsr = ChannelProcessor(channel_id, prompt, answer)
+    ch_prsr = ChannelProcessor(channel_id)
 
     # Send prompt
 
@@ -63,10 +60,10 @@ async def process_trigger(channel_id: str):
 
 
 class ChannelProcessor:
-    def __init__(self, channel_id: str, prompt: str, answer: str):
+    def __init__(self, channel_id: str):
         self.channel_id = channel_id
-        self.prompt = prompt
-        self.answer = answer
+        self.prompt = random.choice(list(user_prompts.keys()))
+        self.answer = user_prompts[self.prompt]
         self.queue = asyncio.Queue()
         self.complete = False
 
