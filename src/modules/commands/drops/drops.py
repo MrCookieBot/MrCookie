@@ -3,15 +3,16 @@ import random
 
 import discord
 
+from resources import checks
 from resources.id_cooldown import IDCooldown
 from resources.mrcookie import instance as bot
 
 from .prompts import user_prompts
 
 # all units in seconds
-PROMPT_TIMEOUT = 10
+PROMPT_TIMEOUT = 75
 PROMPT_COOLDOWN = (3 * 60) + PROMPT_TIMEOUT
-TIME_BETWEEN_MSGS = 90
+TIME_BETWEEN_USER_MSGS = 90
 
 # Handles cooldown logic
 channel_cooldowns: IDCooldown = IDCooldown(PROMPT_COOLDOWN)
@@ -33,12 +34,12 @@ async def on_message(message: discord.Message):
     if (
         not last_msg
         or last_msg.author.id == message.author.id
-        or (message.created_at - last_msg.created_at).seconds >= TIME_BETWEEN_MSGS
+        or (message.created_at - last_msg.created_at).seconds >= TIME_BETWEEN_USER_MSGS
     ):
         channel_last_message[channel_id] = message
-        # return
+        return
 
-    # This applies the cooldown - so we don't need to update it elsewhere.
+    # This applies the cooldown automatically if there is no cooldown found.
     if channel_cooldowns.check_for_id(message.channel.id):
         channel_last_message[channel_id] = message
         return
@@ -48,13 +49,22 @@ async def on_message(message: discord.Message):
 
 
 async def process_trigger(channel: discord.TextChannel):
-    # lock as soon as possible
+    # lock as soon as possible once processing
     channel_lock.add(str(channel.id))
 
     ch_prsr = ChannelProcessor(str(channel.id))
 
     # Send prompt
-    # channel.send()
+    prompt_embed = discord.Embed(
+        title="back alley deal",
+        color=0x468674,
+    )
+    prompt_embed.add_field(name="🕵️‍♂️ cookie man says...", value=ch_prsr.prompt)
+    prompt_embed.add_field(
+        name="🍪 You'll earn:", value=f"{ch_prsr.reward} cookie{'s' if ch_prsr.reward > 1 else ''}"
+    )
+    prompt_embed.set_footer(text=f"BE QUICK! They're gonna burn after {PROMPT_TIMEOUT} seconds!! 🔥")
+    prompt_message: discord.Message = await channel.send(embed=prompt_embed)
 
     # Listen for messages, then stop after asyncio.sleep.
     bot.add_listener(ch_prsr.message_listener, name="on_message")
@@ -62,40 +72,60 @@ async def process_trigger(channel: discord.TextChannel):
     bot.remove_listener(ch_prsr.message_listener, name="on_message")
 
     if not ch_prsr.complete:
-        # nobody answered, send a message saying what the correct answer was.
-        # reply to prompt msg from the bot?
-        # delete after N seconds?
-        ...
-    # Wait for the full timeout before we start listening to messages again
+        await prompt_message.reply(f"-# you guys suck at this 🫵😂... try again next time ", delete_after=7)
+        await asyncio.sleep(7)
+        await prompt_message.delete()
+    else:
+        await prompt_message.delete()
 
-    channel_lock.remove(channel_id)
-    # Set cooldown
+    channel_lock.remove(str(channel.id))
 
 
 class ChannelProcessor:
     def __init__(self, channel_id: str):
         self.channel_id = channel_id
         self.prompt = random.choice(list(user_prompts.keys()))
-        self.answer = user_prompts[self.prompt]
-        self.queue = asyncio.Queue()
+        self.answer = user_prompts[self.prompt].lower()
+        self.reward = random.randint(1, 16)
         self.complete = False
 
     async def message_listener(self, message: discord.Message):
         if message.author.bot or str(message.channel.id) != self.channel_id or self.complete:
             return
 
-        print(f"received message {message.content}")
-
         content = message.content.lower()
         if content != self.answer:
-            print(f"{content} != {self.answer}")
             return
 
-        print(f"success! the user answered correctly - {self.answer}")
         self.complete = True
-        await self.on_complete()
+        await self.on_complete(message)
 
-    async def on_complete(self):
-        # Update user cookies in DB
-        # Send successful grab message
-        ...
+    async def on_complete(self, message: discord.Message):
+        if not message.guild:
+            # for pylance, but this should be impossible anyway
+            return
+
+        author_id = message.author.id
+
+        prompt_embed = discord.Embed(
+            title="🎉 WE HAVE A WINNER!!",
+            color=0x2ECC71,
+            description=(
+                f"Good job <@{author_id}> for being the fastest! Your pockets are now filled with "
+                f"{self.reward} more cookie{'s' if self.reward >1 else ''}."
+            ),
+        )
+
+        await message.reply(embed=prompt_embed, mention_author=False)
+
+        guild_id = message.guild.id
+        guild_data = await checks.lookup_database(author_id, guild_id)
+        if not guild_data:
+            # Populate default user data
+            await checks.new_database(author_id, guild_id)
+            guild_data = await checks.lookup_database(author_id, guild_id)
+
+        user_data = guild_data.get("users", {}).get(author_id, {"Cookies": 0})  # type: ignore
+        user_cookies = user_data["Cookies"] + self.reward
+
+        await checks.update_value(author_id, guild_id, "Cookies", user_cookies)
