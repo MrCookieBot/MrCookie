@@ -125,7 +125,7 @@ class ChannelProcessor:
             await checks.new_database(author_id, guild_id)
             guild_data = await checks.lookup_database(author_id, guild_id)
 
-        user_data = guild_data.get("users", {}).get(author_id, {"Cookies": 0})  # type: ignore
+        user_data = guild_data.get("users", {}).get(str(author_id), {"Cookies": 0})  # type: ignore
         user_cookies = user_data["Cookies"] + self.reward
 
         await checks.update_value(author_id, guild_id, "Cookies", user_cookies)
