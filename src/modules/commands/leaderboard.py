@@ -6,7 +6,6 @@ import discord
 from attrs import define, field
 from discord.ext import commands
 
-from resources.checks import lookup_database, new_database
 from resources.constants import UNICODE_LEFT, UNICODE_RIGHT
 from resources.mrcookie import instance as bot
 
@@ -40,22 +39,12 @@ async def leaderboard(ctx: commands.Context):
     if not guild_users:
         return await ctx.reply("No users have cookies here!", delete_after=7)
 
-    simplified_users: list[SimpleUser] = [
-        SimpleUser(uid, data["Cookies"]) for uid, data in guild_users.items()
-    ]
-    simplified_users.sort(key=(lambda x: x.cookies), reverse=True)
-    this_user = None
-    for n, user in enumerate(simplified_users):
-        user.position = n + 1
-        if user.uid == str(ctx.author.id):
-            this_user = user
-
-    embed = await build_view_page(simplified_users)
+    # ----- Build new Embed -----
+    embed = await build_embed(guild_users, str(ctx.author.id))
     embed.set_thumbnail(url=ctx.guild.icon)
-    if this_user:
-        embed.description = f"Your position: **#{this_user.position}**\n**{'━' * 13}**"
 
-    max_pages = math.ceil(len(simplified_users) / MAX_USERS_PER_PAGE)
+    # ----- Add Buttons -----
+    max_pages = math.ceil(len(guild_users) / MAX_USERS_PER_PAGE)
     view = discord.ui.View(timeout=None)
 
     left_button = discord.ui.Button(
@@ -107,6 +96,19 @@ async def page_buttons(interaction: discord.Interaction, view: discord.ui.View |
             f"You're not allowed to flip through this embed!", ephemeral=True
         )
 
+    # ----- Build new embed -----
+    guild_data = await bot.db.get_guild_users(interaction.guild.id)
+    if guild_data is None:
+        return await interaction.response.send_message("No data for this guild was found!", ephemeral=True)
+
+    guild_users: dict = guild_data.get("users", {})
+    if not guild_users:
+        return await interaction.response.send_message("No users have cookies here!", ephemeral=True)
+
+    embed = await build_embed(guild_users, str(interaction.user.id), page_num=new_page_index)
+    embed.set_thumbnail(url=interaction.guild.icon)
+
+    # ----- Update buttons -----
     prev_page_index = 0 if new_page_index - 1 < 0 else new_page_index - 1
     next_page_index = max_pages if new_page_index + 1 >= max_pages else new_page_index + 1
 
@@ -128,30 +130,26 @@ async def page_buttons(interaction: discord.Interaction, view: discord.ui.View |
     view.add_item(left_button)
     view.add_item(right_button)
 
-    guild_data = await bot.db.get_guild_users(interaction.guild.id)
-    if guild_data is None:
-        return await interaction.response.send_message("No data for this guild was found!", ephemeral=True)
+    await interaction.response.edit_message(embed=embed, view=view)
 
-    guild_users: dict = guild_data.get("users", {})
-    if not guild_users:
-        return await interaction.response.send_message("No users have cookies here!", ephemeral=True)
 
+async def build_embed(guild_users: dict, author_id: str, page_num: int = 0) -> discord.Embed:
     simplified_users: list[SimpleUser] = [
         SimpleUser(uid, data["Cookies"]) for uid, data in guild_users.items()
     ]
     simplified_users.sort(key=(lambda x: x.cookies), reverse=True)
+
     this_user = None
     for n, user in enumerate(simplified_users):
         user.position = n + 1
-        if user.uid == str(interaction.user.id):
+        if user.uid == str(author_id):
             this_user = user
 
-    embed = await build_view_page(simplified_users, page_num=new_page_index)
-    embed.set_thumbnail(url=interaction.guild.icon)
+    embed = await build_view_page(all_users=simplified_users, page_num=page_num)
     if this_user:
         embed.description = f"Your position: **#{this_user.position}**\n**{'━' * 13}**"
 
-    await interaction.response.edit_message(embed=embed, view=view)
+    return embed
 
 
 async def build_view_page(all_users: list[SimpleUser], page_num: int = 0) -> discord.Embed:
