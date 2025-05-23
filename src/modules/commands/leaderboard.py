@@ -9,7 +9,7 @@ from discord.ext import commands
 from resources.constants import UNICODE_LEFT, UNICODE_RIGHT
 from resources.mrcookie import instance as bot
 
-MAX_USERS_PER_PAGE = 2
+MAX_USERS_PER_PAGE = 10
 
 
 @define()
