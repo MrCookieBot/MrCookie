@@ -27,6 +27,7 @@ class SimpleUser:
 
 
 @bot.command(aliases=["lb"])
+@commands.cooldown(1, 45)
 async def leaderboard(ctx: commands.Context):
     if ctx.guild is None:
         return await ctx.reply("This command can only be run in a server!", delete_after=7)
@@ -65,6 +66,20 @@ async def leaderboard(ctx: commands.Context):
     view.add_item(right_button)
 
     await ctx.send(embed=embed, view=view)
+
+
+@leaderboard.error
+async def on_command_error(ctx: commands.Context, error: commands.CommandError):
+    if isinstance(error, commands.CommandOnCooldown):
+        # send the cooldown embed
+        timer = f"{error.retry_after:.0f}"
+        cooldown_embed = discord.Embed(
+            description="You're on cooldown, please try again in ``" + timer + " seconds``.", color=0x992D22
+        )
+
+        await ctx.send(embed=cooldown_embed)
+    else:
+        await ctx.send(f"An unexpected error was encountered when running this command - {type(error)}")
 
 
 # Ref: https://github.com/One-Nub/helper-bot/blob/main/src/modules/auto_response/autoresponder.py
