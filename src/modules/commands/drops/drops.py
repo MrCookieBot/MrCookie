@@ -1,47 +1,60 @@
 import asyncio
 import random
-from datetime import datetime
 
 import discord
 
+from resources.id_cooldown import IDCooldown
 from resources.mrcookie import instance as bot
 
-channel_cooldowns: dict[str, datetime] = dict()
-channel_lock: set[str] = set()
-channel_last_message: dict[str, discord.Message] = dict()
-PROMPT_TIMEOUT = 10
+from .prompts import user_prompts
 
-# Format where the key is the question/prompt. The value is the accepted response.
-user_prompts: dict[str, str] = {"question": "answer", "question2": "answer"}
+# all units in seconds
+PROMPT_TIMEOUT = 10
+PROMPT_COOLDOWN = (3 * 60) + PROMPT_TIMEOUT
+TIME_BETWEEN_MSGS = 90
+
+# Handles cooldown logic
+channel_cooldowns: IDCooldown = IDCooldown(PROMPT_COOLDOWN)
+# Keeps track of which channels have an active prompt
+channel_lock: set[str] = set()
+# Keeps track of last sent message in a channel
+channel_last_message: dict[str, discord.Message] = dict()
 
 
 @bot.listen()
 async def on_message(message: discord.Message):
-    if message.author.bot:
+    channel_id = str(message.channel.id)
+
+    # Ignore bot messages, ignore when channel is locked.
+    if message.author.bot or channel_id in channel_lock or type(message.channel) != discord.TextChannel:
         return
 
-    channel_id = str(message.channel.id)
     last_msg = channel_last_message.get(channel_id)
-    if not last_msg or last_msg.author.id == message.author.id:
+    if (
+        not last_msg
+        or last_msg.author.id == message.author.id
+        or (message.created_at - last_msg.created_at).seconds >= TIME_BETWEEN_MSGS
+    ):
         channel_last_message[channel_id] = message
         # return
 
-    # TODO: Check cooldown.
-
-    # Don't let the bot try and run multiple listeners
-    if channel_id in channel_lock:
+    # This applies the cooldown - so we don't need to update it elsewhere.
+    if channel_cooldowns.check_for_id(message.channel.id):
+        channel_last_message[channel_id] = message
         return
 
-    asyncio.create_task(process_trigger(channel_id))
+    asyncio.create_task(process_trigger(message.channel))
+    del channel_last_message[channel_id]
 
 
-async def process_trigger(channel_id: str):
+async def process_trigger(channel: discord.TextChannel):
     # lock as soon as possible
-    channel_lock.add(channel_id)
+    channel_lock.add(str(channel.id))
 
-    ch_prsr = ChannelProcessor(channel_id)
+    ch_prsr = ChannelProcessor(str(channel.id))
 
     # Send prompt
+    # channel.send()
 
     # Listen for messages, then stop after asyncio.sleep.
     bot.add_listener(ch_prsr.message_listener, name="on_message")
